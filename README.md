@@ -1,2 +1,3 @@
-# text2sql-slm
-Text to SQL using only Small Language Models
+# Text to SQL with SLMs
+
+Exploring and understanding the capabilities of Small Language Models for Text to SQL tasks. (WIP)
