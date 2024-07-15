@@ -216,7 +216,7 @@ class BaseGenerator(ABC):
                 stop=stop,
             )
 
-        if eval_config.chain_of_thought == True:
+        if eval_config.cot == True:
             output_name = (
                 eval_config.data_output_path
                 + "predict_"
@@ -233,7 +233,7 @@ class BaseGenerator(ABC):
                 model_name,
                 eval_config.mode,
                 eval_config.use_knowledge,
-                eval_config.chain_of_thought,
+                eval_config.cot,
             )
         )
 

@@ -128,7 +128,8 @@ $RECYCLE.BIN/
 .conda/
 
 # Data files
-data/
+data/eval/*
+data/finetune/*
 *.csv
 *.tsv
 *.dat
