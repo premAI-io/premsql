@@ -1,0 +1,9 @@
+premai
+transformers
+torch
+tqdm
+backoff
+pandas
+typer 
+sqlparse
+func_timeout
