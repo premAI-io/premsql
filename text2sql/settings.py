@@ -7,12 +7,14 @@ from typing import Literal, Union
 root_path: Path = Path("./text2sql")
 curr_dt = str(datetime.now())
 
+# Most of the file and folder paths needs to be fixed. Subject to change miggt
+# cause error. So that needs to be handled accordingly. Some of the configs can be changed through the command line itself. 
 
 @dataclass
 class EvalConfig:
-    eval_path: str = str(root_path / "data" / "eval" / "dev.json")
-    dev_path: str = str(root_path / "eval" / "output")
-    db_root_path: str = str(root_path / "data" / "eval" / "dev_databases")
+    eval_path: str = str("./data" / "eval" / "dev.json")
+    dev_path: str = str("./experiments" / "eval" / "output")
+    db_root_path: str = str("./data" / "eval" / "dev_databases")
     use_knowledge: bool = False
     mode: str = "dev"
     cot: bool = False

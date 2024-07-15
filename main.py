@@ -1,9 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, Literal, Union 
 
 import typer
 from text2sql.eval.evaluation import EvalFromAPI
-from text2sql.settings import EvalAPIConfig, EvalConfig, EvalHFConfig
+from text2sql.settings import EvalAPIConfig, EvalConfig
 
 app = typer.Typer()
 
@@ -14,21 +14,39 @@ default_eval_config = EvalConfig()
 # then you can do that inside settings. In those cases, code might needs to 
 # change. 
 
-
 @app.command()
-def generate_sql_for_eval(
-    db_root_path: Optional[str] = default_eval_config.db_root_path,
-    engine: Optional[str] = "prem",
-    model_name: Optional[str] = "gpt-4o",
-    eval_path: Optional[str] = default_eval_config.eval_path,
-    data_output_path: Optional[str] = default_eval_config.data_kg_output_path, 
+def evaluate(
+    engine: Literal["prem", "hf"],
+    model_name: str,
     use_knowledge: Optional[bool] = False,
-    chain_of_thought: Optional[bool] = default_eval_config.cot
-
+    chain_of_thought: Optional[bool] = False,
+    temperature: Optional[Union[float, int]] = 0,
+    max_tokens: Optional[int] = 256,
+    stop: Optional[list[str]] = (["--", "\n\n", ";", "#"],)
 ):
-    typer.echo("Starting to generate SQL for eval")
-    if engine == "premai":
-        api_config = EvalAPIConfig(model_name=model_name)
-        eval_engine = ... 
+    typer.echo("Starting to generate SQL for eval ...")
+    assert engine in ["prem", "hf"], ValueError(
+        "Supported engines: 'prem' and 'hf'"
+    )
+    eval_config = EvalConfig(use_knowledge=use_knowledge, cot=chain_of_thought)
+    if engine == "prem":
+        api_config = EvalAPIConfig(
+            model_name=model_name,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            stop=stop
+        ) 
+        eval_client = EvalFromAPI(engine_config=api_config)
+        eval_client.generate_sql(
+            eval_config=eval_config,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stop=stop
+        )
     else:
+        eval_client = None
         raise NotImplementedError
+    
+    typer.echo("Starting to evaluate Generated SQL ...")
+    
+    eval_client.evaluate(eval_config)
