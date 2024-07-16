@@ -15,12 +15,16 @@ default_eval_config = EvalConfig()
 # change. 
 
 @app.command()
+def version():
+    typer.echo("version+v1.0.1")
+
+@app.command()
 def evaluate(
-    engine: Literal["prem", "hf"],
+    engine: str,
     model_name: str,
     use_knowledge: Optional[bool] = False,
     chain_of_thought: Optional[bool] = False,
-    temperature: Optional[Union[float, int]] = 0,
+    temperature: float = 0,
     max_tokens: Optional[int] = 256,
     stop: Optional[list[str]] = (["--", "\n\n", ";", "#"],)
 ):
@@ -41,12 +45,15 @@ def evaluate(
             eval_config=eval_config,
             temperature=temperature,
             max_tokens=max_tokens,
-            stop=stop
+            stop=stop, 
+            model_name=api_config.model_name
         )
     else:
         eval_client = None
         raise NotImplementedError
     
     typer.echo("Starting to evaluate Generated SQL ...")
-    
     eval_client.evaluate(eval_config)
+
+if __name__ == "__main__":
+    app()
