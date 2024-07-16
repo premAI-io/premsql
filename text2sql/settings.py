@@ -12,31 +12,23 @@ curr_dt = str(datetime.now())
 
 @dataclass
 class EvalConfig:
-    eval_path: str = str("./data" / "eval" / "dev.json")
-    dev_path: str = str("./experiments" / "eval" / "output")
-    db_root_path: str = str("./data" / "eval" / "dev_databases")
+    eval_path: str = "./data/eval/dev.json"
+    dev_path: str = "./experiments/eval/output"
+    db_root_path: str = "./data/eval/dev_databases/"
     use_knowledge: bool = False
     mode: str = "dev"
     cot: bool = False
-    data_output_path: str = str(
-        root_path / "eval" / "exp_results" / f"model_output_{curr_dt}"
-    )
-    data_kg_output_path: str = str(
-        root_path / "eval" / "exp_results" / f"model_output_kg_{curr_dt}"
-    )
+    data_output_path: str = f"./experiments/eval/model_output_{curr_dt}"
+    data_kg_output_path: str = f"./experiments/eval/model_output_kg_{curr_dt}"
 
     # Engine
     engine: Literal["premai", "hf"] = "premai"
 
     # Configs for Evaluation for VES
-    predicted_sql_path: str = str(
-        root_path / "eval" / "exp_results" / f"model_output_{curr_dt}"
-    )
-    predicted_sql_path_kg = str(
-        root_path / "eval" / "exp_results" / f"model_output_kg_{curr_dt}"
-    )
+    predicted_sql_path: str = f"./experiments/eval/model_output_{curr_dt}"
+    predicted_sql_path_kg = f"./experiments/eval/model_output_kg_{curr_dt}"
 
-    ground_truth_path: str = str(root_path / "data" / "eval")
+    ground_truth_path: str = "./data/eval/"
 
     data_mode: str = "dev"
     mode_gt: str = "gt"
@@ -44,7 +36,7 @@ class EvalConfig:
     num_cpus: int = 16
     meta_time_out: float = 30.0
 
-    diff_json_path: str = ""
+    diff_json_path: str = "./data/eval/dev.json"
 
 
 @dataclass

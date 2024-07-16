@@ -13,6 +13,7 @@ from text2sql.eval.evaluator import (compute_ves_by_diff, package_sqls,
 from text2sql.settings import EvalConfig
 
 
+N = 2
 def decouple_question_schema(datasets, db_root_path):
     question_list = []
     db_path_list = []
@@ -168,7 +169,7 @@ class BaseGenerator(ABC):
         stop: Optional[list[str]] = ["--", "\n\n", ";", "#"],
     ):
         response_list = []
-        for i, question in tqdm(enumerate(question_list), total=len(question_list)):
+        for i, question in tqdm(enumerate(question_list[:N]), total=len(question_list[:N])):
             if knowledge_list:
                 current_prompt = self.generate_combined_prompts_one(
                     db_path=db_path_list[i],
@@ -214,6 +215,14 @@ class BaseGenerator(ABC):
                 max_tokens=max_tokens,
                 temperature=temperature,
                 stop=stop,
+            )
+        else:
+            responses = self.collect_response_from_model(
+                db_path_list=db_path_list,
+                question_list=question_list,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop=stop
             )
 
         if eval_config.cot == True:

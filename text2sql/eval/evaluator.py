@@ -8,7 +8,7 @@ import time
 import numpy as np
 from func_timeout import FunctionTimedOut, func_timeout
 
-
+exec_result = []
 def result_callback(result):
     exec_result.append(result)
 
@@ -78,7 +78,7 @@ def execute_model(
     result = {"sql_idx": idx, "time_ratio": time_ratio}
     return result
 
-
+N = 2
 def package_sqls(sql_path, db_root_path, mode="gpt", data_mode="dev"):
     clean_sqls = []
     db_path_list = []
@@ -95,7 +95,7 @@ def package_sqls(sql_path, db_root_path, mode="gpt", data_mode="dev"):
     elif mode == "gt":
         sqls = open(sql_path + data_mode + ".sql")  #'_gold.sql')
         sql_txt = sqls.readlines()
-        for idx, sql_str in enumerate(sql_txt):
+        for idx, sql_str in enumerate(sql_txt[:N]):
             sql, db_name = sql_str.strip().split("\t")
             clean_sqls.append(sql)
             db_path_list.append(db_root_path + db_name + "/" + db_name + ".sqlite")
@@ -148,7 +148,10 @@ def load_json(dir):
 
 def compute_ves_by_diff(exec_results, diff_json_path):
     num_queries = len(exec_results)
-    contents = load_json(diff_json_path)
+    contents = load_json(diff_json_path)[:N]
+    print("-----------")
+    print(len(contents), len(exec_results))
+
     simple_results, moderate_results, challenging_results = [], [], []
     for i, content in enumerate(contents):
         if content["difficulty"] == "simple":
