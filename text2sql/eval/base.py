@@ -7,13 +7,10 @@ from typing import Optional, Union
 from tqdm import tqdm
 
 from text2sql.eval import prompts
-from text2sql.eval.evaluator import (compute_ves_by_diff, package_sqls,
-                                     print_data, run_sqls_parallel,
-                                     sort_results)
 from text2sql.settings import EvalConfig
 
 
-N = 2
+N = 3
 def decouple_question_schema(datasets, db_root_path):
     question_list = []
     db_path_list = []
@@ -246,34 +243,3 @@ class BaseGenerator(ABC):
             )
         )
 
-    def evaluate(self, eval_config: EvalConfig):
-        exec_result = []
-        pred_queries, db_paths = package_sqls(
-            eval_config.predicted_sql_path,
-            eval_config.db_root_path,
-            mode=eval_config.mode_predict,
-            data_mode=eval_config.data_mode,
-        )
-        gt_queries, db_paths_gt = package_sqls(
-            eval_config.ground_truth_path,
-            eval_config.db_root_path,
-            mode="gt",
-            data_mode=eval_config.data_mode,
-        )
-
-        query_pairs = list(zip(pred_queries, gt_queries))
-        run_sqls_parallel(
-            query_pairs,
-            db_places=db_paths,
-            num_cpus=eval_config.num_cpus,
-            meta_time_out=eval_config.meta_time_out,
-        )
-        exec_result = sort_results(exec_result)
-        print("starting to calculate ...")
-        simple_ves, moderate_ves, challenging_ves, ves, count_lists = (
-            compute_ves_by_diff(exec_result, eval_config.diff_json_path)
-        )
-        score_lists = [simple_ves, moderate_ves, challenging_ves, ves]
-        print_data(score_lists, count_lists)
-        print("=" * 91)
-        print("Fininshed Evaluation")
