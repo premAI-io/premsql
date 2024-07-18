@@ -1,10 +1,10 @@
 import os
-from typing import Optional, Literal, Union 
+from typing import Optional 
 
 import typer
 from text2sql.eval.evaluation import EvalFromAPI
 from text2sql.settings import EvalAPIConfig, EvalConfig
-
+from text2sql.eval.evaluator import evaluate_sql
 app = typer.Typer()
 
 default_eval_config = EvalConfig()
@@ -17,6 +17,15 @@ default_eval_config = EvalConfig()
 @app.command()
 def version():
     typer.echo("version+v1.0.1")
+
+
+@app.command()
+def download_data(type: Optional[str]="eval", force: Optional[bool]=False):
+    if type == "eval":
+        command = f"./data/download.sh {'--force' if force else ''}"
+        os.system(command)   
+    else:
+        typer.echo("Downloading for eval is only supported now")
 
 @app.command()
 def evaluate(
@@ -53,7 +62,15 @@ def evaluate(
         raise NotImplementedError
     
     typer.echo("Starting to evaluate Generated SQL ...")
-    eval_client.evaluate(eval_config)
+    evaluate_sql(
+        predicted_sql_path=eval_config.predicted_sql_path,
+        ground_truth_path=eval_config.ground_truth_path,
+        db_root_path=eval_config.db_root_path,
+        num_cpus=eval_config.num_cpus,
+        diff_json_path=eval_config.diff_json_path,
+        data_mode=eval_config.data_mode
+    )
+
 
 if __name__ == "__main__":
     app()
