@@ -40,3 +40,7 @@ INI_COT_RESULT_NO_KG = """
 COT_WIZARD = """
 \nGenerate the SQL after thinking step by step: 
 """
+
+SYSTEM_PROMPT = """
+Only output the SQL query from the given context and what ever is asked to retrieve. You should NOT give or output anything else other than the SQL query. ONLY THE RAW SQL. DO not start with ```sql or end with ```. JUST the raw SQL query.
+"""
