@@ -9,8 +9,6 @@ from text2sql.eval.ves import SQLVesEvaluator
 
 app = typer.Typer()
 
-default_eval_config = EvalConfig()
-
 @app.command()
 def version():
     typer.echo("version+v1.0.1")
