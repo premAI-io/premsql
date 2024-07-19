@@ -1,55 +1,62 @@
 import os
-from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
-from typing import Literal, Union
-
-root_path: Path = Path("./text2sql")
-curr_dt = str(datetime.now())
-
-# Most of the file and folder paths needs to be fixed. Subject to change miggt
-# cause error. So that needs to be handled accordingly. Some of the configs can be changed through the command line itself.
+from dataclasses import dataclass, field
+from typing import Union, Optional
 
 
 @dataclass
-class EvalConfig:
+class SQLGeneratorConfig:
     eval_path: str = "./data/eval/dev.json"
-    dev_path: str = "./experiments/eval/output"
     db_root_path: str = "./data/eval/dev_databases/"
-    use_knowledge: bool = False
     mode: str = "dev"
-    cot: bool = False
-    data_output_path: str = f"./experiments/eval/model_output_{curr_dt}"
-    data_kg_output_path: str = f"./experiments/eval/model_output_kg_{curr_dt}"
+    model_name: str = "default"
+    use_knowledge: bool = False
+    chain_of_thought: bool = False
+    data_output_folder: str = field(init=False)
+    data_output_path: str = field(init=False)
+    engine: str = "prem"
 
-    # Engine
-    engine: Literal["premai", "hf"] = "premai"
+    def __post_init__(self):
+        self.data_output_folder = (
+            f"./experiments/eval/{self.engine}_{self.model_name}_kg"
+            if self.use_knowledge
+            else f"./experiments/eval/{self.engine}_{self.model_name}"
+        )
 
-    # Configs for Evaluation for VES
-    predicted_sql_path: str = f"./experiments/eval/model_output_{curr_dt}"
-    predicted_sql_path_kg = f"./experiments/eval/model_output_kg_{curr_dt}"
-
-    ground_truth_path: str = "./data/eval/"
-
-    data_mode: str = "dev"
-    mode_gt: str = "gt"
-    mode_predict: str = "gpt"
-    num_cpus: int = 16
-    meta_time_out: float = 30.0
-
-    diff_json_path: str = "./data/eval/dev.json"
+        self.data_output_path = os.path.join(
+            self.data_output_folder,
+            f"predict_{self.mode}{'_cot.json' if self.chain_of_thought else '.json'}",
+        )
 
 
 @dataclass
-class EvalAPIConfig:
-    project_id: int = 4071
-    premai_api_key: str = os.environ.get("PREMAI_API_KEY", None)
+class MetricConfig:
+    gt_path: str = "./data/eval/"
+    num_cpus: int = 8
+    diff_json_path: str = "./data/eval/dev.json"
+    meta_time_out: float = 30.0
+    num_rows: int = None
+
+
+@dataclass
+class APIConfig:
     model_name: str = "gpt-4o"
+    project_id: int = 4071
+    api_key: str = os.environ.get("PREMAI_API_KEY", None)
     max_tokens: int = (256,)
     temperature: Union[float, int] = (0,)
     stop: list[str] = (["--", "\n\n", ";", "#"],)
 
 
 @dataclass
-class EvalHFConfig:
-    model_name: str = "phi3"
+class ModelConfig:
+    model_name: str = "default_model"
+    model_path: Optional[str] = None
+    device: str = "cuda"
+    backened: str = "vllm"
+    max_tokens: int = (256,)
+    temperature: Union[float, int] = (0,)
+    stop: list[str] = (["--", "\n\n", ";", "#"],)
+
+    def __post_init__(self):
+        if self.model_path is None:
+            self.model_path = self.model_name
