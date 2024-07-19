@@ -1,5 +1,0 @@
-{
-    "0": "MAX(`Percent (%) Eligible Free (K-12)`) FROM frpm JOIN schools ON frpm.CDSCode = schools.CDSCode WHERE `County Name` = 'Alameda'\t----- bird -----\tcalifornia_schools",
-    "1": "SELECT `School Name`, `Percent (%) Eligible Free (Ages 5-17)` FROM frpm WHERE `School Type` = 'Continuation' ORDER BY `Percent (%) Eligible Free (Ages 5-17)` ASC LIMIT 3\t----- bird -----\tcalifornia_schools",
-    "2": "Zip FROM schools WHERE County = 'Fresno' AND Charter = 1\t----- bird -----\tcalifornia_schools"
-}

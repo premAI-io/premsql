@@ -1,5 +1,0 @@
-{
-    "0": "SELECT MAX(`Free Meal Count (K-12)` / `Enrollment (K-12)`) AS HighestEligibleFreeRate FROM frpm JOIN schools ON frpm.CDSCode = schools.CDSCode WHERE `County Name` = 'Alameda'\t----- bird -----\tcalifornia_schools",
-    "1": "SELECT `School Name`, (`Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)`) AS EligibleFreeRate FROM frpm WHERE `School Type` = 'Continuation' ORDER BY EligibleFreeRate ASC LIMIT 3\t----- bird -----\tcalifornia_schools",
-    "2": "schools.Zip FROM schools JOIN frpm ON schools.CDSCode = frpm.CDSCode WHERE frpm.`Charter School (Y/N)` = 1 AND schools.County = 'Fresno County Office of Education'\t----- bird -----\tcalifornia_schools"
-}

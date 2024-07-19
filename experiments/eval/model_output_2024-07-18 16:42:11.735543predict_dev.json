@@ -1,5 +1,0 @@
-{
-    "0": "```sql\nSELECT MAX(`Percent (%) Eligible Free (K-12)`) \nFROM frpm \nJOIN schools ON frpm.CDSCode = schools.CDSCode \nWHERE `County Name` = 'Alameda';\n```\t----- bird -----\tcalifornia_schools",
-    "1": "```sql\nSELECT `School Name`, `Percent (%) Eligible Free (Ages 5-17)`\nFROM frpm\nWHERE `School Type` = 'Continuation'\nORDER BY `Percent (%) Eligible Free (Ages 5-17)` ASC\nLIMIT 3\n```\t----- bird -----\tcalifornia_schools",
-    "2": "SELECT Zip FROM schools WHERE County = 'Fresno' AND Charter = 1;\t----- bird -----\tcalifornia_schools"
-}
