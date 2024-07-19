@@ -1,18 +1,15 @@
 import os
-from typing import Optional 
+from typing import Optional
 
 import typer
-from text2sql.eval.evaluation import EvalFromAPI
-from text2sql.settings import EvalAPIConfig, EvalConfig
-from text2sql.eval.evaluator import evaluate_sql
+from text2sql.eval.generator import SQLGeneratorFromAPI
+from text2sql.settings import APIConfig, SQLGeneratorConfig, MetricConfig
+from text2sql.eval.executor import SQLExecutorEX
+from text2sql.eval.ves import SQLVesEvaluator
+
 app = typer.Typer()
 
 default_eval_config = EvalConfig()
-
-# Command line will only have those parameters which needs to be tweaked 
-# for experimentation. Others are kept fixed. However if you want to change
-# then you can do that inside settings. In those cases, code might needs to 
-# change. 
 
 @app.command()
 def version():
@@ -20,57 +17,90 @@ def version():
 
 
 @app.command()
-def download_data(type: Optional[str]="eval", force: Optional[bool]=False):
+def download_data(type: Optional[str] = "eval", force: Optional[bool] = False):
     if type == "eval":
         command = f"./data/download.sh {'--force' if force else ''}"
-        os.system(command)   
+        os.system(command)
     else:
         typer.echo("Downloading for eval is only supported now")
 
+
 @app.command()
-def evaluate(
+def generate_dev(
     engine: str,
     model_name: str,
+    metric: Optional[str] = "acc",
+    num_rows: Optional[int] = None,
     use_knowledge: Optional[bool] = False,
     chain_of_thought: Optional[bool] = False,
     temperature: float = 0,
     max_tokens: Optional[int] = 256,
-    stop: Optional[list[str]] = (["--", "\n\n", ";", "#"],)
+    stop: Optional[list[str]] = (["--", "\n\n", ";", "#"],),
 ):
     typer.echo("Starting to generate SQL for eval ...")
-    assert engine in ["prem", "hf"], ValueError(
-        "Supported engines: 'prem' and 'hf'"
+    assert engine in ["prem", "hf"], ValueError("Supported engines: 'prem' and 'hf'")
+    assert metric in ["acc", "ves", "both"], ValueError(
+        "Argument metric should be either: 'acc' or 'ves' or 'both'"
     )
-    eval_config = EvalConfig(use_knowledge=use_knowledge, cot=chain_of_thought)
+
+    generator_config = SQLGeneratorConfig(
+        model_name=model_name,
+        use_knowledge=use_knowledge,
+        chain_of_thought=chain_of_thought,
+        engine=engine,
+    )
+
     if engine == "prem":
-        api_config = EvalAPIConfig(
+        api_config = APIConfig(
             model_name=model_name,
             max_tokens=max_tokens,
             temperature=temperature,
-            stop=stop
-        ) 
-        eval_client = EvalFromAPI(engine_config=api_config)
-        eval_client.generate_sql(
-            eval_config=eval_config,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            stop=stop, 
-            model_name=api_config.model_name
+            stop=stop,
         )
+        client = SQLGeneratorFromAPI(
+            generator_config=generator_config, engine_config=api_config
+        )
+
+        client.generate_sql(num_rows=num_rows)
+
+        metric_config = MetricConfig()
+        metric_config.num_rows = num_rows
+
+        # Doing execution here
+        if metric == "acc":
+            executor = SQLExecutorEX()
+            _ = executor.execute_ex(
+                generator_config=generator_config,
+                metric_config=metric_config,
+                num_rows=num_rows,
+            )
+
+        elif metric == "ves":
+            executor = SQLVesEvaluator()
+            _ = executor.execute(
+                generator_config=generator_config,
+                metric_config=metric_config,
+                num_rows=num_rows,
+            )
+        else:
+            executor = SQLExecutorEX()
+            _ = executor.execute_ex(
+                generator_config=generator_config,
+                metric_config=metric_config,
+                num_rows=num_rows,
+            )
+
+            executor = SQLVesEvaluator()
+            _ = executor.execute(
+                generator_config=generator_config,
+                metric_config=metric_config,
+                num_rows=num_rows,
+            )
+
     else:
         eval_client = None
         raise NotImplementedError
-    
     typer.echo("Starting to evaluate Generated SQL ...")
-    evaluate_sql(
-        predicted_sql_path=eval_config.predicted_sql_path,
-        ground_truth_path=eval_config.ground_truth_path,
-        db_root_path=eval_config.db_root_path,
-        num_cpus=eval_config.num_cpus,
-        diff_json_path=eval_config.diff_json_path,
-        data_mode=eval_config.data_mode
-    )
-
 
 if __name__ == "__main__":
     app()

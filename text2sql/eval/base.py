@@ -10,7 +10,6 @@ from text2sql.eval import prompts
 from text2sql.settings import EvalConfig
 
 
-N = 3
 def decouple_question_schema(datasets, db_root_path):
     question_list = []
     db_path_list = []
@@ -160,13 +159,18 @@ class BaseGenerator(ABC):
         self,
         db_path_list: list[str],
         question_list: list[str],
+        num_rows: Optional[int] = None,
         knowledge_list: Optional[list[str]] = None,
         max_tokens: Optional[int] = 256,
         temperature: Optional[Union[float, int]] = 0,
         stop: Optional[list[str]] = ["--", "\n\n", ";", "#"],
     ):
         response_list = []
-        for i, question in tqdm(enumerate(question_list[:N]), total=len(question_list[:N])):
+        num_rows = len(question_list) if num_rows is None else num_rows
+
+        for i, question in tqdm(
+            enumerate(question_list[:num_rows]), total=len(question_list[:num_rows])
+        ):
             if knowledge_list:
                 current_prompt = self.generate_combined_prompts_one(
                     db_path=db_path_list[i],
@@ -197,6 +201,7 @@ class BaseGenerator(ABC):
         max_tokens: Optional[int] = None,
         temperature: Optional[Union[int, float]] = None,
         stop: Optional[list] = None,
+        num_rows: Optional[int] = None,
     ):
         eval_data = json.load(open(eval_config.eval_path, "r"))
         question_list, db_path_list, knowledge_list = decouple_question_schema(
@@ -212,6 +217,7 @@ class BaseGenerator(ABC):
                 max_tokens=max_tokens,
                 temperature=temperature,
                 stop=stop,
+                num_rows=num_rows,
             )
         else:
             responses = self.collect_response_from_model(
@@ -219,7 +225,8 @@ class BaseGenerator(ABC):
                 question_list=question_list,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                stop=stop
+                stop=stop,
+                num_rows=num_rows,
             )
 
         if eval_config.cot == True:
@@ -242,4 +249,3 @@ class BaseGenerator(ABC):
                 eval_config.cot,
             )
         )
-

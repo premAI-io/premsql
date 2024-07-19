@@ -8,7 +8,8 @@ root_path: Path = Path("./text2sql")
 curr_dt = str(datetime.now())
 
 # Most of the file and folder paths needs to be fixed. Subject to change miggt
-# cause error. So that needs to be handled accordingly. Some of the configs can be changed through the command line itself. 
+# cause error. So that needs to be handled accordingly. Some of the configs can be changed through the command line itself.
+
 
 @dataclass
 class EvalConfig:

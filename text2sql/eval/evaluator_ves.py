@@ -1,19 +1,20 @@
-import json
-import math
-import multiprocessing as mp
-import sqlite3
+import os
+import pdb
 import sys
-import time
-
+import json
 import numpy as np
-from func_timeout import FunctionTimedOut, func_timeout
+import argparse
+import sqlite3
+import multiprocessing as mp
+from typing import Optional
+from func_timeout import func_timeout, FunctionTimedOut
+import time
+import math
 
-# Initialize the global variable
-exec_result = []
 
 def result_callback(result):
-    global exec_result
     exec_result.append(result)
+
 
 def clean_abnormal(input):
     input = np.asarray(input)
@@ -25,13 +26,17 @@ def clean_abnormal(input):
             processed_list.append(x)
     return processed_list
 
+
 def execute_sql(sql, db_path):
+    # Connect to the database
     conn = sqlite3.connect(db_path)
+    # Create a cursor object
     cursor = conn.cursor()
     start_time = time.time()
     cursor.execute(sql)
     exec_time = time.time() - start_time
     return exec_time
+
 
 def iterated_execute_sql(predicted_sql, ground_truth, db_path, iterate_num):
     conn = sqlite3.connect(db_path)
@@ -51,13 +56,20 @@ def iterated_execute_sql(predicted_sql, ground_truth, db_path, iterate_num):
         time_ratio = sum(processed_diff_list) / len(processed_diff_list)
     return time_ratio
 
-def execute_model(predicted_sql, ground_truth, db_place, idx, iterate_num, meta_time_out):
+
+def execute_model(
+    predicted_sql, ground_truth, db_place, idx, iterate_num, meta_time_out
+):
     try:
+        # you can personalize the total timeout number
+        # larger timeout leads to more stable ves
+        # while it needs more your patience....
         time_ratio = func_timeout(
             meta_time_out * iterate_num,
             iterated_execute_sql,
             args=(predicted_sql, ground_truth, db_place, iterate_num),
         )
+        # print([idx, math.sqrt(time_ratio)])
     except KeyboardInterrupt:
         sys.exit(0)
     except FunctionTimedOut:
@@ -69,7 +81,6 @@ def execute_model(predicted_sql, ground_truth, db_place, idx, iterate_num, meta_
     result = {"sql_idx": idx, "time_ratio": time_ratio}
     return result
 
-N = 3
 
 def package_sqls(sql_path, db_root_path, mode="gpt", data_mode="dev"):
     clean_sqls = []
@@ -87,16 +98,15 @@ def package_sqls(sql_path, db_root_path, mode="gpt", data_mode="dev"):
     elif mode == "gt":
         sqls = open(sql_path + data_mode + ".sql")  #'_gold.sql')
         sql_txt = sqls.readlines()
-        for idx, sql_str in enumerate(sql_txt[:N]):
+        for idx, sql_str in enumerate(sql_txt):
             sql, db_name = sql_str.strip().split("\t")
             clean_sqls.append(sql)
             db_path_list.append(db_root_path + db_name + "/" + db_name + ".sqlite")
 
     return clean_sqls, db_path_list
 
+
 def run_sqls_parallel(sqls, db_places, num_cpus=1, iterate_num=100, meta_time_out=30.0):
-    global exec_result
-    exec_result = []
     pool = mp.Pool(processes=num_cpus)
     for i, sql_pair in enumerate(sqls):
         predicted_sql, ground_truth = sql_pair
@@ -115,8 +125,10 @@ def run_sqls_parallel(sqls, db_places, num_cpus=1, iterate_num=100, meta_time_ou
     pool.close()
     pool.join()
 
+
 def sort_results(list_of_dicts):
     return sorted(list_of_dicts, key=lambda x: x["sql_idx"])
+
 
 def compute_ves(exec_results):
     num_queries = len(exec_results)
@@ -130,17 +142,18 @@ def compute_ves(exec_results):
     ves = total_ratio / num_queries
     return ves
 
+
 def load_json(dir):
     with open(dir, "r") as j:
         contents = json.loads(j.read())
     return contents
 
-def compute_ves_by_diff(exec_results, diff_json_path):
-    num_queries = len(exec_results)
-    contents = load_json(diff_json_path)[:N]
-    print("-----------")
-    print(len(contents), len(exec_results))
 
+def compute_ves_by_diff(exec_results, diff_json_path, num_rows: Optional[int] = None):
+    num_queries = len(exec_results)
+    contents = load_json(diff_json_path)
+    if num_rows:
+        contents = contents[:num_rows]
     simple_results, moderate_results, challenging_results = [], [], []
     for i, content in enumerate(contents):
         if content["difficulty"] == "simple":
@@ -149,27 +162,10 @@ def compute_ves_by_diff(exec_results, diff_json_path):
             moderate_results.append(exec_results[i])
         if content["difficulty"] == "challenging":
             challenging_results.append(exec_results[i])
-    try:
-        simple_ves = compute_ves(simple_results)
-    except Exception:
-        simple_ves = 0
-
-    try:
-        moderate_ves = compute_ves(moderate_results)
-    except Exception:
-        moderate_ves = 0
-
-    try:
-        challenging_ves = compute_ves(challenging_results)
-    except Exception:
-        challenging_ves = 0
-
-    try:
-        all_ves = compute_ves(exec_results)
-    except Exception:
-        all_ves = 0
-    
-    
+    simple_ves = compute_ves(simple_results)
+    moderate_ves = compute_ves(moderate_results)
+    challenging_ves = compute_ves(challenging_results)
+    all_ves = compute_ves(exec_results)
     count_lists = [
         len(simple_results),
         len(moderate_results),
@@ -178,46 +174,65 @@ def compute_ves_by_diff(exec_results, diff_json_path):
     ]
     return simple_ves, moderate_ves, challenging_ves, all_ves, count_lists
 
+
 def print_data(score_lists, count_lists):
     levels = ["simple", "moderate", "challenging", "total"]
     print("{:20} {:20} {:20} {:20} {:20}".format("", *levels))
     print("{:20} {:<20} {:<20} {:<20} {:<20}".format("count", *count_lists))
 
-    print(f"{'='*41}    VES   {'='*41}")
+    print(
+        "=========================================    VES   ========================================"
+    )
     print("{:20} {:<20.2f} {:<20.2f} {:<20.2f} {:<20.2f}".format("ves", *score_lists))
 
-def evaluate_sql(
-    predicted_sql_path,
-    ground_truth_path,
-    data_mode,
-    db_root_path,
-    num_cpus=1,
-    meta_time_out=30.0,
-    mode_gt='gt',
-    mode_predict='gpt',
-    diff_json_path=''
-):
-    global exec_result
+
+if __name__ == "__main__":
+    args_parser = argparse.ArgumentParser()
+    args_parser.add_argument(
+        "--predicted_sql_path", type=str, required=True, default=""
+    )
+    args_parser.add_argument("--ground_truth_path", type=str, required=True, default="")
+    args_parser.add_argument("--data_mode", type=str, required=True, default="dev")
+    args_parser.add_argument("--db_root_path", type=str, required=True, default="")
+    args_parser.add_argument("--num_cpus", type=int, default=1)
+    args_parser.add_argument("--meta_time_out", type=float, default=30.0)
+    args_parser.add_argument("--mode_gt", type=str, default="gt")
+    args_parser.add_argument("--mode_predict", type=str, default="gpt")
+    args_parser.add_argument("--diff_json_path", type=str, default="")
+    args_parser.add_argument("--num_rows", type=int, default=None)
+
+    args = args_parser.parse_args()
     exec_result = []
-    
-    pred_queries, db_paths = package_sqls(predicted_sql_path, db_root_path, mode=mode_predict, data_mode=data_mode)
-    gt_queries, db_paths_gt = package_sqls(ground_truth_path, db_root_path, mode=mode_gt, data_mode=data_mode)
+
+    pred_queries, db_paths = package_sqls(
+        args.predicted_sql_path,
+        args.db_root_path,
+        mode=args.mode_predict,
+        data_mode=args.data_mode,
+    )
+    # generate gt sqls:
+    gt_queries, db_paths_gt = package_sqls(
+        args.ground_truth_path, args.db_root_path, mode="gt", data_mode=args.data_mode
+    )
 
     query_pairs = list(zip(pred_queries, gt_queries))
-    run_sqls_parallel(query_pairs, db_places=db_paths, num_cpus=num_cpus, meta_time_out=meta_time_out)
+    run_sqls_parallel(
+        query_pairs,
+        db_places=db_paths,
+        num_cpus=args.num_cpus,
+        meta_time_out=args.meta_time_out,
+    )
     exec_result = sort_results(exec_result)
-
-    print('start calculate')
-    simple_ves, moderate_ves, challenging_ves, ves, count_lists = \
-        compute_ves_by_diff(exec_result, diff_json_path)
+    print("start calculate")
+    simple_ves, moderate_ves, challenging_ves, ves, count_lists = compute_ves_by_diff(
+        exec_result, args.diff_json_path, args.num_rows
+    )
     score_lists = [simple_ves, moderate_ves, challenging_ves, ves]
     print_data(score_lists, count_lists)
-    print("="*91)
+    print(
+        "==========================================================================================="
+    )
     print("Finished evaluation")
-
-# Example usage:
-# evaluate_sql(predicted_sql_path='path/to/predicted.sql', ground_truth_path='path/to/ground_truth.sql', data_mode='dev', db_root_path='path/to/db/root')
-
 
 
 #     command = f"""
