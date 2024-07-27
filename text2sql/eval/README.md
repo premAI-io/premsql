@@ -1,1 +1,0 @@
-This dir contains all the evaluation scripts and results.
