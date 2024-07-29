@@ -4,7 +4,7 @@ from typing import Optional
 import typer
 from text2sql.eval.generator import SQLGeneratorFromAPI
 from text2sql.settings import APIConfig, SQLGeneratorConfig, MetricConfig
-from text2sql.eval.executor import SQLExecutorEX
+from text2sql.eval.executor.bird import SQLExecutorEX
 from text2sql.eval.ves import SQLVesEvaluator
 
 app = typer.Typer()
