@@ -1,7 +1,0 @@
-Some todos:
-
-1. Get N as a cli argument.
-2. the run jsons should be named on the basis of the name of the model and the current date.
-3. Integrate huggingface models. 
-4. Run all the experiments in parallel with tmux. 
-5. Make a leaderboard of it. 
