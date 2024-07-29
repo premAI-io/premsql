@@ -170,3 +170,6 @@ artifacts/
 .dvc/cache
 .dvc/tmp
 .cache/
+examples/data 
+examples/experiments
+archive
