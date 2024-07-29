@@ -9,7 +9,7 @@ from text2sql.eval.prompts.bird import SYSTEM_PROMPT
 class SQLGeneratorConfig:
     eval_path: str = "./data/eval/dev.json"
     db_root_path: str = "./data/eval/"
-    chain_of_thought: bool = False 
+    chain_of_thought: bool = False
     databases_folder_name: str = "dev_databases/"
     mode: str = "dev"
     model_name: str = "default"
@@ -56,7 +56,6 @@ class ModelConfig:
     model_name: str = "default_model"
     model_path: Optional[str] = None
     device: str = "cuda"
-    backend: str = "vllm"
     max_tokens: int = (256,)
     temperature: Union[float, int] = (0,)
     stop: list[str] = (["--", "\n\n", ";", "#"],)

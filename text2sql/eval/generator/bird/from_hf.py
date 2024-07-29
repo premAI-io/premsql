@@ -72,4 +72,4 @@ class SQLGeneratorFromModel(BaseGenerator):
             output[num_input_tokens:] if len(output) > num_input_tokens else output
         )
         result = self.tokenizer.decode(output_tokens, skip_special_tokens=True)
-        return result 
+        return result
