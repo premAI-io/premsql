@@ -9,7 +9,7 @@ This library offers modular tools and components designed to help developers cre
 First, install the library using the following command:
 
 ```bash
-pip install git+https://github.com/premAI-io/text2sql-slm.git
+pip install git+https://github.com/premAI-io/text2sql.git
 ```
 
 You can either use the Prem AI API to evaluate different closed-source models or use HuggingFace models to evaluate open-source models. Here, we show you how to use the Prem AI API. If you are not familiar with how to use the Prem AI API, [check out our docs](https://docs.premai.io/introduction) to get started quickly.

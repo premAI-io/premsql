@@ -10,7 +10,7 @@ setup(
     description='A package for text-to-SQL conversion',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/premAI-io/text2sql-slm',
+    url='https://github.com/premAI-io/text2sql.git',
     author='Your Name',
     author_email='your.email@example.com',
     license='MIT',
