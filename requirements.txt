@@ -7,3 +7,4 @@ pandas
 typer 
 sqlparse
 func_timeout
+tabulate
