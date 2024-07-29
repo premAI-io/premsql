@@ -9,10 +9,11 @@ from text2sql.eval.prompts.bird import SYSTEM_PROMPT
 class SQLGeneratorConfig:
     eval_path: str = "./data/eval/dev.json"
     db_root_path: str = "./data/eval/"
+    chain_of_thought: bool = False 
+    databases_folder_name: str = "dev_databases/"
     mode: str = "dev"
     model_name: str = "default"
     use_knowledge: bool = False
-    chain_of_thought: bool = False
     data_output_folder: str = field(init=False)
     data_output_path: str = field(init=False)
     engine: str = "prem"
