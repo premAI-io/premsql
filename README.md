@@ -4,12 +4,21 @@ This library offers modular tools and components designed to help developers cre
 
 **Please note:** This library is in its early stages, and we are actively developing additional features. This current release focuses only on evaluation. You can check out our in-depth [documentation here](/docs/evaluation/).
 
+## Blogs and Resources 
+
+- [Documentation](/docs)
+- [Examples](/examples)
+- [Blog: How much Text to SQL is a solved Problem](https://blog.premai.io/text2sql-eval)
+- [Blog: State of SQL 2024](https://blog.premai.io/state-of-text2sql-2024/)
+
 ## Quick Start
 
 First, install the library using the following command:
 
 ```bash
-pip install git+https://github.com/premAI-io/text2sql.git
+git clone https://github.com/premAI-io/text2sql.git
+cd text2sql
+pip install -e .
 ```
 
 You can either use the Prem AI API to evaluate different closed-source models or use HuggingFace models to evaluate open-source models. Here, we show you how to use the Prem AI API. If you are not familiar with how to use the Prem AI API, [check out our docs](https://docs.premai.io/introduction) to get started quickly.
