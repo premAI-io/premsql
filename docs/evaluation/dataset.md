@@ -54,7 +54,7 @@ db_id: A string indicating the database identifier where the query will be execu
 This is how we load the database using text2sql library. 
 
 ```python 
-from text2sql.eval.dataset.bird import BirdBenchEvalDataset
+from text2sql.eval.dataset import BirdBenchEvalDataset
 from text2sql.eval.settings import SQLGeneratorConfig
 
 config = SQLGeneratorConfig(model_name="some-experiment-name")
