@@ -51,7 +51,7 @@ Both the mentioned generated are derived from the `BaseGenerator` class. So here
 ```python 
 from typing import Union
 from text2sql.eval.generator.bird.base import BaseGenerator
-from text2sql.eval.settings import APIConfig, SQLGeneratorConfig
+from text2sql.eval.settings import APIConfig, SQLGeneratorConfig, ModelConfig
 
 class SQLGeneratorFromYourConnector(BaseGenerator):
     def __init__(
