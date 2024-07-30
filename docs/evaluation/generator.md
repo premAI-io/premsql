@@ -12,7 +12,7 @@ Let's see how we can use Prem AI API to get the results from the model.
 ```python
 import os
 
-from text2sql.eval.generator.bird.from_api import SQLGeneratorFromAPI
+from text2sql.eval.generator import SQLGeneratorFromAPI
 from text2sql.eval.settings import APIConfig, SQLGeneratorConfig
 
 # Create an API Config 
@@ -49,7 +49,8 @@ The same API Interface is been used in `SQLGeneratorFromModel` class. However in
 Both the mentioned generated are derived from the `BaseGenerator` class. So here is how you will create your own generator class, which might use your own API or any other engine like vLLM or Llama CPP, etc. 
 
 ```python 
-from typing import Union 
+from typing import Union
+from text2sql.eval.generator.bird.base import SQLGeneratorFromAPI
 from text2sql.eval.settings import APIConfig, SQLGeneratorConfig
 
 class SQLGeneratorFromYourConnector(BaseGenerator):
