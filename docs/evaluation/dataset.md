@@ -1,10 +1,10 @@
 # Evaluation 
 
-This components would help you to evaluate your model or your pipeline on several public benchmark. As of now, we only support BirdBench. Based on the demand we would roll out support for other popular benchmark dataset like Spider and WikiSQL in the future. 
+This component helps you evaluate your model or pipeline on several public benchmark datasets. As of now, we only support BirdBench. Based on demand, we will roll out support for other popular benchmark datasets like Spider and WikiSQL in the future. 
 
 ## Evaluation Dataset
 
-Current version supports and uses BIRDBench dev dataset for doing all the evaluations. However the structure of the dataset is as follows:
+The current version supports and uses the BIRDBench dev dataset to perform all the evaluations. However, the structure of the dataset is as follows:
 
 ```
 .
@@ -30,7 +30,7 @@ Current version supports and uses BIRDBench dev dataset for doing all the evalua
 ├── dev.json
 ```
 
-Inside `dev_databases` we have different folder. Each folder is the name of the database. Under that folder we have the .sqlite folder. Additionally it as a `database_description` which contains the CSV files of the tables which are present in that database. The `dev.json` is a list of dictionary that has the following contents:
+Inside `dev_databases`, we have a different folder. Each folder is the name of the database. We have a .sqlite folder under that folder. Additionally, it has a `database_description`, which contains the CSV files of the tables in that database. The `dev.json` is a list of dictionaries that has the following contents:
 
 ```JSON
 {
@@ -47,7 +47,7 @@ Where,
 - `question_id`: An integer representing the unique identifier for the question.
 db_id: A string indicating the database identifier where the query will be executed.
 - `question`: A string containing the natural language question that needs to be converted to SQL.
-- `evidence`: A string providing a brief explanation or formula that supports the formation of the SQL query. This acts as the domain knowledge needed around the database and tables inside the database. 
+- `evidence`: A string providing a brief explanation or formula that supports the formation of the SQL query. This acts as the domain knowledge needed about the database and its tables. 
 - `SQL`: A string representing the SQL query generated to answer the natural language question. This is the ground truth.
 - `difficulty`: A string indicating the level of difficulty of the SQL query, such as "simple," "medium," or "hard." 
 
@@ -69,7 +69,7 @@ raw_validation_data = eval_dataset.data
 
 ### Filtering Options and processing
 
-We use `process_and_filter` to do some more processing on the top of the raw data. It starts by appending the database (.sqlite file path) for each json blob. It also provides the feature to filter the dataset and offset it to get a subset of the data. Here is how you do that:
+We use `process_and_filter` to do more processing on the top of the raw data. It starts by appending the database (.sqlite file path) for each json blob. It also provides the feature to filter the dataset and offset it to get a subset of the data. Here is how you do that:
 
 ```python
 filter_by = ("difficulty", "simple")
@@ -83,7 +83,7 @@ dataset = eval_dataset.process_and_filter(
 
 **NOTE**
 
-Argument `filter_by` is a key, value pair. For BirdBench dataset there are only two types of filter which you can apply. Here are those:
+Argument `filter_by` is a key, value pair. For the BirdBench dataset, there are only two types of filters that you can apply. Here are those:
 
 - When the key is set to: `difficulty`, the values can be: 
   - simple
@@ -103,9 +103,9 @@ Argument `filter_by` is a key, value pair. For BirdBench dataset there are only 
   - debit_card_specializing
   - formula_1
 
-Key `db_id` only does the evaluation for a specific database. You can check the contents of the database once the data is download inside the `data/eval/dev_databases` folder. This folder will be present inside the folder you are running the experiments. When setting the offset, it will take only the first N rows of the dataset or the filtered dataset.
+Key `db_id` only evaluates a specific database. You can check the contents of the database once the data is downloaded inside the `data/eval/dev_databases` folder. This folder will be present inside the folder you are running the experiments. When setting the offset, it will take only the first N rows of the dataset or the filtered dataset.
 
-Both the arguments are optional and not using them would load the full data. After applying filter our `dataset` will be a list of dictionary here. Let's see how it looks like (showing you one instance):
+Both arguments are optional; not using them would load the full data. After applying the filter, our `dataset` will be a list of dictionaries here. Let's see what it looks like (showing you one instance):
 
 ```JSON
 {
@@ -224,6 +224,6 @@ Maintaining this structure would let you run the same pipeline flawlessly withou
 
 ### Case 2
 
-In this cases, you are not using any sqlite database. As a way around, you can do a simple migration to sqlite (as dev databases does not need to be large). 
+In this cases, you are not using any sqlite database. As a way around, you can do a simple migration to sqlite (as validation/test set databases does not need to be large). 
 
 If you still want to connect with different databases, then please wait for sometime. Docs for these are on developement. In the meantime, you check out [our dataset code](/text2sql/eval/dataset/bird.py). You need to come up with similar class stucture such that you can finally have a structure like the JSON blobs shown above. 
