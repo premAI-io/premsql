@@ -24,11 +24,10 @@ pip install -e .
 You can either use the Prem AI API to evaluate different closed-source models or use HuggingFace models to evaluate open-source models. Here, we show you how to use the Prem AI API. If you are not familiar with how to use the Prem AI API, [check out our docs](https://docs.premai.io/introduction) to get started quickly.
 
 ```python
-from text2sql.eval.dataset.bird import BirdBenchEvalDataset
+from text2sql.eval.dataset import BirdBenchEvalDataset
 from text2sql.eval.settings import SQLGeneratorConfig, APIConfig
-from text2sql.eval.generator.bird.from_api import SQLGeneratorFromAPI
-from text2sql.eval.executor.bird.acc import BirdExecutorAcc
-from text2sql.eval.executor.bird.ves import BirdExecutorVES
+from text2sql.eval.generator import SQLGeneratorFromAPI
+from text2sql.eval.executor import BirdExecutorAcc, BirdExecutorVES
 
 # Create a config (which contains all the general settings)
 # and give a name to the experiment you are performing.
