@@ -9,8 +9,8 @@ For evaluation, we will use two classes, `BirdExecutorAcc` and `BirdExecutorVES`
 To use this, we do the following: 
 
 ```python
-from text2sql.eval.executor.bird.acc import BirdExecutorAcc
-from text2sql.eval.executor.bird.ves import BirdExecutorVES
+from text2sql.eval.executor import BirdExecutorAcc
+from text2sql.eval.executor import BirdExecutorVES
 from text2sql.eval.settings import APIConfig, SQLGeneratorConfig
 
 
