@@ -1,6 +1,6 @@
 premai==0.3.62
 transformers==4.42.4
-torch==2.3.1
+torch==2.2.0
 tqdm==4.66.4
 backoff==2.2.1
 pandas==2.2.2
