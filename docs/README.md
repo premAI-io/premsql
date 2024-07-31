@@ -1,6 +1,6 @@
 ## Prem text2sql
 
-Welcome to the text2sql documentation. This library offers modular tools and components designed to help developers create more efficient and reliable text-to-SQL models and engines. Please note: This library is in its early stages. We are actively developing additional features, which will be released soon.
+Welcome to the text2sql documentation. This library offers modular tools and components designed to help developers create more efficient and reliable text-to-SQL models and engines. Please note: This library is in its early stages. Currently we support evaluation. We are actively developing the other mentioned features, which we will roll out soon.
 
 ### High-level architecture
 
