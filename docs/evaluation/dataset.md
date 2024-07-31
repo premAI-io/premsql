@@ -1,8 +1,6 @@
-# Evaluation 
+# Evaluation datasets
 
-This component helps you evaluate your model or pipeline on several public benchmark datasets. As of now, we only support BirdBench. Based on demand, we will roll out support for other popular benchmark datasets like Spider and WikiSQL in the future. 
-
-## Evaluation Dataset
+This component helps you evaluate your model or pipeline on several public benchmark datasets. As of now, we only support BirdBench. Based on demand, we will roll out support for other popular benchmark datasets like Spider and WikiSQL in the future.  
 
 The current version supports and uses the BIRDBench dev dataset to perform all the evaluations. However, the structure of the dataset is as follows:
 
