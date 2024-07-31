@@ -8,7 +8,7 @@ This library offers modular tools and components designed to help developers cre
 
 - [Documentation](/docs)
 - [Examples](/examples)
-- [Blog: How much Text to SQL is a solved Problem]([https://blog.premai.io/text2sql-eval](https://blog.premai.io/evaluating-llms-for-text-to-sql-with-prem-text2sql/)
+- [Blog: Evaluating SoTA model for text2sql task using Prem text2sql](https://blog.premai.io/evaluating-llms-for-text-to-sql-with-prem-text2sql/)
 - [Blog: State of SQL 2024](https://blog.premai.io/state-of-text2sql-2024/)
 
 ## Quick Start
@@ -125,7 +125,7 @@ We have also benchmarked several closed and open-source models. Here are some re
 ![Model comparison VES (1)](/docs/assets/ves.png)
 
 
-We have also made a detailed blog about this. If you are more interested in the analysis, you can check out the [blog post here](https://blog.premai.io/text2sql-eval).
+We have also made a detailed blog about this. If you are more interested in the analysis, you can check out the [blog post here](https://blog.premai.io/evaluating-llms-for-text-to-sql-with-prem-text2sql/).
 
 ## High-Level Architecture
 
