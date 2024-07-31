@@ -6,6 +6,8 @@ The generators class lets you generate SQL responses when given the input prompt
 
 - `from_hf`: This connects different huggingface models. Please note that the current version only supports CausalLM models. We will provide more general support in the coming versions. 
 
+Generators can be anything as long as it takes a string prompt as input and outputs a string. This can be LLM or even an agentic workflow (as a function or an API). So you can test out LLM's performance natively or agents too through this. 
+
 Let's see how we can use Prem AI API to get the results from the model. 
 
 
