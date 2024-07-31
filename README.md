@@ -163,3 +163,18 @@ We welcome contributions from the community! If you would like to contribute, pl
 5. Submit a pull request, describing what your changes do and why you think they are beneficial.
 
 ---
+
+## References and Acknowledgements
+
+We use the BIRDBench dataset for our text2sql evaluation dataset. Some part of the code is inspired from them. 
+
+```
+@misc{li2023llm,
+  title={Can LLM Already Serve as A Database Interface? A BIg Bench for Large-Scale Database Grounded Text-to-SQLs},
+  author={Jinyang Li and Binyuan Hui and Ge Qu and Binhua Li and Jiaxi Yang and Bowen Li and Bailin Wang and Bowen Qin and Ruiying Geng and Nan Huo and Xuanhe Zhou and Chenhao Ma and Guoliang Li and Kevin C. C. Chang and Fei Huang and Reynold Cheng and Yongbin Li},
+  year={2023},
+  eprint={2305.03111},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL}
+}
+```
