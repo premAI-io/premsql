@@ -40,18 +40,11 @@ class SQLGeneratorFromModel(BaseGenerator):
             token=self.engine_config.hf_token,
         )
 
-    def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
-        system_prompt = (
-            system_prompt if system_prompt is not None else ModelConfig.system_prompt
-        )
-        prompt_template = system_prompt + "\n" + prompt
-
+    def generate(self, prompt: str, postprocess: Optional[callable] = lambda x:x) -> str:
         if self.engine_config.is_instruct:
             prompt = self.tokenizer.apply_chat_template(
-                [{"role": "user", "content": prompt_template}], tokenize=False
+                [{"role": "user", "content": prompt}], tokenize=False
             )
-        else:
-            prompt = prompt_template
 
         inputs = self.tokenizer.encode(prompt, return_tensors="pt").to(
             self.engine_config.device
@@ -72,4 +65,4 @@ class SQLGeneratorFromModel(BaseGenerator):
             output[num_input_tokens:] if len(output) > num_input_tokens else output
         )
         result = self.tokenizer.decode(output_tokens, skip_special_tokens=True)
-        return result
+        return postprocess(result)
