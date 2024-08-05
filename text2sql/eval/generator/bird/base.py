@@ -28,25 +28,6 @@ class BaseGenerator(ABC):
     def generate(self, prompt: str) -> str:
         raise NotImplementedError
 
-    def postprocess(self, input_string: str) -> str:
-        sql_start_keywords = [
-            r"\bSELECT\b",
-            r"\bINSERT\b",
-            r"\bUPDATE\b",
-            r"\bDELETE\b",
-            r"\bWITH\b",
-        ]
-
-        sql_start_pattern = re.compile("|".join(sql_start_keywords), re.IGNORECASE)
-        match = sql_start_pattern.search(input_string)
-
-        if match:
-            start_pos = match.start()
-            sql_statement = input_string[start_pos:]
-            return sql_statement
-        else:
-            return input_string
-
     def generate_sql_file(self, response_list: list[str]) -> dict[int, str]:
         """Returns the final result with the sql file to execute"""
         if self.generator_config.data_output_path:
@@ -65,7 +46,7 @@ class BaseGenerator(ABC):
     def generate_and_save_results(
         self,
         data: list[dict],
-        postprocess: Optional[bool] = False,
+        postprocess: Optional[callable] = lambda x:x,
         force: Optional[bool] = False,
     ) -> dict:
         assert "prompt" in data[0], ValueError(
@@ -75,8 +56,7 @@ class BaseGenerator(ABC):
 
         def _generate(data):
             for content in tqdm(data, total=len(data)):
-                sql = self.generate(prompt=content["prompt"])
-                sql = self.postprocess(sql) if postprocess else sql
+                sql = self.generate(prompt=content["prompt"], postprocess=postprocess)
                 content["generated"] = sql
             self.generate_sql_file(response_list=data)
             return data
