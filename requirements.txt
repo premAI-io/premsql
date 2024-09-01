@@ -1,10 +1,2 @@
-premai==0.3.62
-transformers==4.42.4
-torch==2.2.0
-tqdm==4.66.4
-backoff==2.2.1
-pandas==2.2.2
-typer==0.12.3
-sqlparse==0.5.0
-func_timeout==4.3.5
-tabulate==0.9.0
+accelerate
+einops
