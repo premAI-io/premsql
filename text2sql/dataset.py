@@ -115,6 +115,8 @@ class BirdDevDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         data_path: str,
+        databases_folder_name: Optional[str] = "dev_databases",
+        json_file_name: Optional[str]="dev.json",
         system_prompt: Optional[str] = None,
         num_fewshot: Optional[int] = None,
         filter_by: Optional[tuple] = None,
@@ -123,10 +125,10 @@ class BirdDevDataset(torch.utils.data.Dataset):
         hf_token: Optional[str] = None,
     ):
         self.path = Path(data_path)  # example: data/bird/dev
-        data = json.load(open(self.path / "dev.json", "r"))
+        data = json.load(open(self.path / json_file_name, "r"))
         for blob in data:
             blob["db_path"] = str(
-                self.path / f"dev_databases" / blob["db_id"] / f"{blob['db_id']}.sqlite"
+                self.path / f"{databases_folder_name}" / blob["db_id"] / f"{blob['db_id']}.sqlite"
             )
 
         if filter_by is not None:

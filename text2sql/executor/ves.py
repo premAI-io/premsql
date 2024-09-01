@@ -118,7 +118,7 @@ class Text2SQLVESFromSQLite:
         for response in tqdm(model_responses, total=len(model_responses)):
             result = self.execute_model(
                 predicted_sql=response["generated"],
-                ground_truth_sql=response["sql"],
+                ground_truth_sql=response["SQL"],
                 dsn_or_db_path=response["db_path"]
             )
             data_with_results.append({**response, **result})
