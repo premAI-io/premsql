@@ -1,0 +1,45 @@
+data
+experiments
+
+# Python specific
+*.pyc
+*.pyo
+__pycache__/
+
+# Virtual environments
+venv/
+env/
+env.bak/
+env1/
+env2/
+.env
+
+# IDE specific
+.idea/
+.vscode/
+
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.exe
+*.out
+*.pyc
+*.whl
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Data science and ML specific
+data/
+models/
+*.h5
+*.pkl
+*.joblib
+
+# Jupyter Notebook specific
+.ipynb_checkpoints/
