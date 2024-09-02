@@ -1,176 +1,45 @@
-# Byte-compiled / optimized / DLL files
+data
+experiments
+
+# Python specific
+*.pyc
+*.pyo
 __pycache__/
-*.py[cod]
-*$py.class
 
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Pyre type checker
-.pyre/
-
-# Environments
-.env
-.venv
-env/
+# Virtual environments
 venv/
-ENV/
+env/
 env.bak/
-venv.bak/
+env1/
+env2/
+.env
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# pyright
-pyrightconfig.json
-
-# Editor settings
+# IDE specific
 .idea/
 .vscode/
-*.swp
-*~
-.project
-.settings/
-.metadata/
-*.bak
-*.orig
-*.tmp
-*.DS_Store
+
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.exe
+*.out
+*.pyc
+*.whl
+
+# Logs and databases
 *.log
+*.sqlite3
+*.db
 
-# Mac OS
-.DS_Store
-._*
-.Spotlight-V100
-.Trashes
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Anaconda
-.conda/
-
-# Data files
-data/eval/*
-data/finetune/*
-*.csv
-*.tsv
-*.dat
-*.data
-
-# Model files
+# Data science and ML specific
+data/
+models/
 *.h5
-*.hdf5
-*.ckpt
-*.pb
-*.onnx
-
-# TensorFlow / Keras
-checkpoint
-checkpoints/
-*.index
-*.meta
-
-# PyTorch
-*.pt
-*.pth
-
-# Scikit-learn
 *.pkl
+*.joblib
 
-# Logs and artifacts
-logs/
-artifacts/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# SageMaker
-*.sagemaker/
-
-# DVC
-.dvc/
-.dvc/cache
-.dvc/tmp
-.cache/
-examples/data 
-examples/experiments
-archive
-todo
+# Jupyter Notebook specific
+.ipynb_checkpoints/
