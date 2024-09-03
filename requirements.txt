@@ -1,7 +1,6 @@
 accelerate==0.33.0
 einops==0.8.0
-premai==0.3.62
-transformers==4.42.4
+transformers==4.44.2
 torch==2.2.0
 tqdm==4.66.4
 pandas==2.2.2
