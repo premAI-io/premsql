@@ -2,10 +2,12 @@ from pathlib import Path
 from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
+
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[BIRD-DATASET]")
+
 
 class BirdDataset(Text2SQLBaseDataset):
     def __init__(
@@ -13,10 +15,11 @@ class BirdDataset(Text2SQLBaseDataset):
         split: str,
         dataset_folder: Optional[Union[str, Path]] = "./data",
         hf_token: Optional[str] = None,
+        force_download: Optional[bool] = False,
     ):
         dataset_folder = Path(dataset_folder)
         bird_folder = dataset_folder / "bird"
-        if not bird_folder.exists():
+        if not bird_folder.exists() or force_download:
             bird_folder.mkdir(parents=True, exist_ok=True)
 
             # Download it from hf hub
@@ -24,6 +27,7 @@ class BirdDataset(Text2SQLBaseDataset):
                 repo_id="premai-io/birdbench",
                 repo_type="dataset",
                 local_dir=dataset_folder / "bird",
+                force_download=force_download,
             )
 
         dataset_path = bird_folder / split
@@ -47,8 +51,8 @@ class BirdDataset(Text2SQLBaseDataset):
         num_rows: int | None = None,
         num_fewshot: int | None = None,
         model_name_or_path: str | None = None,
-        prompt_template: str | None = ...,
-    ):  
+        prompt_template: str | None = None,
+    ):
         logger.info("Setting up Bird Dataset")
         return super().setup_dataset(
             filter_by, num_rows, num_fewshot, model_name_or_path, prompt_template
