@@ -1,10 +1,34 @@
+import json
 import random
 from collections import defaultdict
+from pathlib import Path
 from textwrap import dedent
-from typing import Sequence
+from typing import Sequence, Union
 
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer
+
+from text2sql.logger import setup_console_logger
+
+logger = setup_console_logger(name="[UTILS]")
+
+
+def save_to_json(save_path: Union[str, Path], json_object: dict):
+    try:
+        save_path = Path(save_path) if isinstance(save_path, str) else save_path
+        with open(save_path, "w") as json_file:
+            json.dump(json_object, json_file, indent=4)
+        logger.info(f"Saved JSON in: {save_path}")
+    except Exception as e:
+        logger.error(f"Unable to save JSON, Error: {e}")
+
+
+def load_from_json(result_json_path: str) -> dict:
+    try:
+        with open(result_json_path, "r") as json_file:
+            return json.load(json_file)
+    except Exception as e:
+        logger.error(f"Unable to load JSON, Error: {e}")
 
 
 def get_random_few_shot_prompts(dataset: list[dict], num_few_shot: int):
