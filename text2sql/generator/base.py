@@ -101,6 +101,15 @@ class BaseGenerator(ABC):
             json.dump(
                 to_dump, open(self.experiment_path / "predict.json", "w"), indent=4
             )
+
+            # Also write a .sql file in the same path
+            sqls = []
+            for content in to_dump:
+                sqls.append(content["generated"])
+            
+            with open(self.experiment_path / "predict.sql", "w") as f:
+                f.write("\n".join(sqls))
+
             logger.info(f"All responses are written to: {self.experiment_path}")
             return to_dump
 
