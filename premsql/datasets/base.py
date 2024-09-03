@@ -10,20 +10,20 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from text2sql.datasets.prompts import OLD_BASE_TEXT2SQL_PROMPT
-from text2sql.datasets.utils import (
+from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
+from premsql.datasets.utils import (
     filter_options,
     get_random_few_shot_prompts,
     tokenize_fn,
 )
-from text2sql.logger import setup_console_logger
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[DATASET]")
 
 IGNORE_INDEX = -100
 
 
-class Text2SQLBaseInstance(ABC):
+class Text2SQLBaseInstance:
     def __init__(self, dataset: list[dict]) -> None:
 
         assert "question" in dataset[0], "question is required"
@@ -42,7 +42,6 @@ class Text2SQLBaseInstance(ABC):
     def __getitem__(self, idx: int) -> dict:
         return dict(**self.dataset[idx])
 
-    @abstractmethod
     def schema_prompt(self, db_path: str) -> str:
         schemas = {}
         conn = sqlite3.connect(db_path)
@@ -63,7 +62,9 @@ class Text2SQLBaseInstance(ABC):
             else:
                 schemas[table_name] = "Schema does not exist"
 
-        schema_prompt = "\n".join(schemas[table[0]] for table in tables if table[0])
+        schema_prompt = "\n".join(
+            schemas[table[0]] for table in tables if table[0] != "sqlite_sequence"
+        )
         return schema_prompt
 
     def additional_prompt(self, prompt: Optional[str] = None):
@@ -76,12 +77,14 @@ class Text2SQLBaseInstance(ABC):
         )
         return db_fewshot_prompts_map[db_id]
 
-    @abstractmethod
     def apply_prompt(
         self,
         num_fewshot: Optional[int] = None,
-        prompt_template: Optional[str] = OLD_BASE_TEXT2SQL_PROMPT,
+        prompt_template: Optional[str] = None,
     ):
+        prompt_template = (
+            BASE_TEXT2SQL_PROMPT if prompt_template is None else prompt_template
+        )
         for blob in tqdm(self.dataset, total=len(self.dataset), desc="Applying prompt"):
             few_shot_prompt = (
                 ""
@@ -103,35 +106,66 @@ class Text2SQLBaseInstance(ABC):
 
 
 class SupervisedDatasetForTraining(torch.utils.data.Dataset):
-    def __init__(
-        self, dataset: dict, model_name_or_path: str, hf_token: Optional[str] = None
-    ):
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            pretrained_model_name_or_path=model_name_or_path,
-            padding_side="right",
-            token=hf_token,
+    @classmethod
+    def load_from_pth(cls, dataset_path: Union[str, Path]):
+        dataset_path = str(dataset_path)
+        dataset_dict = torch.load(dataset_path)
+
+        assert "input_ids" in dataset_dict[0], "input_ids is required"
+        assert "labels" in dataset_dict[0], "labels is required"
+        assert "raw" in dataset_dict[0], "raw is required"
+
+        return cls(
+            dataset=dataset_dict,
+            model_name_or_path=None,
+            hf_token=None,
         )
 
+    def __init__(
+        self,
+        dataset: dict,
+        model_name_or_path: Optional[str] = None,
+        hf_token: Optional[str] = None,
+    ):
         assert "prompt" in dataset[0], "key prompt is required"
         assert "SQL" in dataset[0], "key SQL is required"
-        self.dataset = dataset
 
-        if self.tokenizer.chat_template:
-            for content in self.dataset:
-                content["prompt"] = self.tokenizer.apply_chat_template(
-                    [{"role": "user", "content": content["prompt"]}], tokenize=False
-                )
-            logger.info("Casted dataset with model chat template")
+        self.is_tokenized = False
 
-        logger.info("Starting Tokenization ...")
-        sources, targets = [], []
-        for example in self.dataset:
-            sources.append(example["prompt"])
-            targets.append(f"{example['SQL']}{self.tokenizer.eos_token}")
+        if model_name_or_path is not None:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                pretrained_model_name_or_path=model_name_or_path,
+                padding_side="right",
+                token=hf_token,
+            )
+            self.dataset = dataset
 
-        data_dict = self.preprocess(sources=sources, targets=targets)
-        self.input_ids = data_dict["input_ids"]
-        self.labels = data_dict["labels"]
+            if self.tokenizer.chat_template:
+                for content in self.dataset:
+                    content["prompt"] = self.tokenizer.apply_chat_template(
+                        [{"role": "user", "content": content["prompt"]}], tokenize=False
+                    )
+                logger.info("Casted dataset with model chat template")
+
+            logger.info("Starting Tokenization ...")
+            sources, targets = [], []
+            for example in self.dataset:
+                sources.append(example["prompt"])
+                targets.append(f"{example['SQL']}{self.tokenizer.eos_token}")
+
+            data_dict = self.preprocess(sources=sources, targets=targets)
+            self.input_ids = data_dict["input_ids"]
+            self.labels = data_dict["labels"]
+            self.is_tokenized = True
+
+        elif "input_ids" in dataset[0] and "labels" in dataset[0]:
+            self.dataset = dataset
+            self.input_ids = dataset["input_ids"]
+            self.labels = dataset["labels"]
+            self.is_tokenized = True
+
+        else:
+            self.dataset = dataset
 
     def preprocess(self, sources: Sequence[str], targets: Sequence[str]):
         examples = [s + t for s, t in zip(sources, targets)]
@@ -150,11 +184,18 @@ class SupervisedDatasetForTraining(torch.utils.data.Dataset):
         return len(self.dataset)
 
     def __getitem__(self, idx: int):
-        return dict(
-            input_ids=self.input_ids[idx],
-            labels=self.labels[idx],
-            raw=dict(**self.dataset[idx]),
-        )
+        if self.is_tokenized:
+            return dict(
+                input_ids=self.input_ids[idx],
+                labels=self.labels[idx],
+                raw=dict(**self.dataset[idx]),
+            )
+        else:
+            return dict(**self.dataset[idx])
+
+    def save_tokenized_dataset(self, path_to_save: Union[str, Path]):
+        torch.save(self.dataset, str(path_to_save))
+        logger.info("Dataset saved successfully in {}".format(path_to_save))
 
 
 class Text2SQLBaseDataset(ABC):
@@ -182,7 +223,7 @@ class Text2SQLBaseDataset(ABC):
         num_rows: Optional[int] = None,
         num_fewshot: Optional[int] = None,
         model_name_or_path: Optional[str] = None,
-        prompt_template: Optional[str] = OLD_BASE_TEXT2SQL_PROMPT,
+        prompt_template: Optional[str] = BASE_TEXT2SQL_PROMPT,
     ):
         for content in self.dataset:
             content["db_path"] = str(
@@ -198,7 +239,7 @@ class Text2SQLBaseDataset(ABC):
         if num_rows:
             self.dataset = self.dataset[:num_rows]
 
-        self.dataset = Text2SQLBaseInstance(data=self.dataset).apply_prompt(
+        self.dataset = Text2SQLBaseInstance(dataset=self.dataset).apply_prompt(
             num_fewshot=num_fewshot, prompt_template=prompt_template
         )
         return (
