@@ -1,13 +1,13 @@
 import os
-import torch
 from typing import Optional, Union
 
+import torch
 import transformers
+
 from text2sql.generator.base import BaseGenerator
 from text2sql.logger import setup_console_logger
-from text2sql.utils import execute_sql
 from text2sql.prompts import ERROR_HANDLING_PROMPT
-
+from text2sql.utils import execute_sql
 
 logger = setup_console_logger(name="[HF-EX]")
 

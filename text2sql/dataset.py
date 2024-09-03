@@ -1,14 +1,15 @@
 import json
-import torch
 import sqlite3
-from tqdm import tqdm
 from pathlib import Path
-from typing import Optional
 from textwrap import dedent
+from typing import Optional
+
+import torch
+from tqdm import tqdm
 from transformers import AutoTokenizer
 
 from text2sql.logger import setup_console_logger
-from text2sql.utils import get_random_few_shot_prompts, _filter_options
+from text2sql.utils import _filter_options, get_random_few_shot_prompts
 
 logger = setup_console_logger(name="[BIRD-DEV]")
 
@@ -116,7 +117,7 @@ class BirdDevDataset(torch.utils.data.Dataset):
         self,
         data_path: str,
         databases_folder_name: Optional[str] = "dev_databases",
-        json_file_name: Optional[str]="dev.json",
+        json_file_name: Optional[str] = "dev.json",
         system_prompt: Optional[str] = None,
         num_fewshot: Optional[int] = None,
         filter_by: Optional[tuple] = None,
@@ -128,7 +129,10 @@ class BirdDevDataset(torch.utils.data.Dataset):
         data = json.load(open(self.path / json_file_name, "r"))
         for blob in data:
             blob["db_path"] = str(
-                self.path / f"{databases_folder_name}" / blob["db_id"] / f"{blob['db_id']}.sqlite"
+                self.path
+                / f"{databases_folder_name}"
+                / blob["db_id"]
+                / f"{blob['db_id']}.sqlite"
             )
 
         if filter_by is not None:

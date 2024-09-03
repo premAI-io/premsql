@@ -1,16 +1,19 @@
-import sys 
-import time 
-import math 
+import math
 import sqlite3
-import numpy as np
-from tqdm import tqdm 
+import sys
+import time
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import numpy as np
 from func_timeout import FunctionTimedOut, func_timeout
-from typing import Optional, Union, List, Dict, Any
+from tqdm import tqdm
+
 from text2sql.logger import setup_console_logger
 from text2sql.utils import save_to_json
 
 logger = setup_console_logger(name="[EVALUATION]")
+
 
 class Text2SQLVESFromSQLite:
     def __init__(self, experiment_path: Union[str, Path]):
@@ -21,7 +24,7 @@ class Text2SQLVESFromSQLite:
         mean = np.mean(input_array)
         std = np.std(input_array)
         return [x for x in input_array if mean - 3 * std < x < mean + 3 * std]
-    
+
     def match_sqls(
         self, predicted_sql: str, ground_truth_sql: str, dsn_or_db_path: str
     ) -> int:
@@ -33,7 +36,7 @@ class Text2SQLVESFromSQLite:
         ground_truth_res = cursor.fetchall()
         conn.close()
         return 1 if set(predicted_res) == set(ground_truth_res) else 0
-    
+
     def sql_execution_time(self, sql: str, dsn_or_db_path) -> float:
         conn = sqlite3.connect(dsn_or_db_path)
         cursor = conn.cursor()
@@ -53,42 +56,32 @@ class Text2SQLVESFromSQLite:
             diff_list = []
             for _ in range(iterate_num):
                 predicted_time = self.sql_execution_time(
-                    sql=predicted_sql,
-                    dsn_or_db_path=dsn_or_db_path
+                    sql=predicted_sql, dsn_or_db_path=dsn_or_db_path
                 )
                 ground_truth_time = self.sql_execution_time(
-                    sql=ground_truth_sql,
-                    dsn_or_db_path=dsn_or_db_path
+                    sql=ground_truth_sql, dsn_or_db_path=dsn_or_db_path
                 )
                 diff_list.append(ground_truth_time / predicted_time)
             diff_list = self.clean_abnormal(diff_list)
             time_ratio = sum(diff_list) / len(diff_list)
             return time_ratio
         return 0.0
-    
+
     def execute_model(
-        self, 
+        self,
         predicted_sql: str,
         ground_truth_sql: str,
         dsn_or_db_path: str,
         iterate_num: int = 10,
-        meta_time_out: int = 1000
+        meta_time_out: int = 1000,
     ):
         try:
             result = func_timeout(
                 meta_time_out,
                 self.execute_fn,
-                args=(
-                    predicted_sql, 
-                    ground_truth_sql,
-                    dsn_or_db_path, 
-                    iterate_num
-                )
+                args=(predicted_sql, ground_truth_sql, dsn_or_db_path, iterate_num),
             )
-            return {
-                "ves": result,
-                "error": None
-            }
+            return {"ves": result, "error": None}
         except KeyboardInterrupt:
             sys.exit(0)
         except FunctionTimedOut as e:
@@ -96,21 +89,20 @@ class Text2SQLVESFromSQLite:
         except Exception as e:
             return {"ves": 0, "error": f"Exception: {e}"}
 
-
     def compute_metric(self, results: List[Dict[str, Any]]) -> float:
         try:
             num_queries = len(results)
             total_ratio = 0.0
             for result in results:
                 total_ratio += math.sqrt(result["ves"]) * 100
-            ves = (total_ratio / num_queries)
+            ves = total_ratio / num_queries
             return ves
         except Exception as e:
             logger.error(f"Error computing VES metric: {e}")
             return 0.0
-    
+
     def execute(
-        self, 
+        self,
         model_responses: List[Dict[str, Any]],
         filter_by: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -119,7 +111,7 @@ class Text2SQLVESFromSQLite:
             result = self.execute_model(
                 predicted_sql=response["generated"],
                 ground_truth_sql=response["SQL"],
-                dsn_or_db_path=response["db_path"]
+                dsn_or_db_path=response["db_path"],
             )
             data_with_results.append({**response, **result})
 

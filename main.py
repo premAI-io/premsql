@@ -1,6 +1,6 @@
 from text2sql.dataset import BirdDevDataset
-from text2sql.generator.from_hf import GeneratorHFModel
 from text2sql.executor.from_sqlite import ExecutorFromSQLite
+from text2sql.generator.from_hf import GeneratorHFModel
 
 data_path = "./path/to/test/dataset"
 model_name_or_path = "premai-io/prem-1B-SQL"
@@ -9,8 +9,8 @@ model_name_or_path = "premai-io/prem-1B-SQL"
 dataset = BirdDevDataset(
     data_path=data_path,
     databases_folder_name="dev_databases",  # Change the name here if there is other name
-    json_file_name="dev.json",              # Change the name here if the name is different
-    num_fewshot=5,                          # This is not to be changed
+    json_file_name="dev.json",  # Change the name here if the name is different
+    num_fewshot=5,  # This is not to be changed
     model_name_or_path=model_name_or_path,
 )
 
@@ -35,16 +35,10 @@ executor = ExecutorFromSQLite(
 )
 
 ex_acc = executor.compute(
-    model_responses=responses,
-    metric="accuracy",
-    filter_by="difficulty"
+    model_responses=responses, metric="accuracy", filter_by="difficulty"
 )
 
-ves = executor.compute(
-    model_responses=responses,
-    metric="ves",
-    filter_by="difficulty"
-)
+ves = executor.compute(model_responses=responses, metric="ves", filter_by="difficulty")
 
 print(f"Accuracy: {ex_acc}")
 print(f"VES: {ves}")

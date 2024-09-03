@@ -1,9 +1,11 @@
-import sys
 import sqlite3
-from tqdm import tqdm
+import sys
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
 from func_timeout import FunctionTimedOut, func_timeout
-from typing import Optional, Union, List, Dict, Any
+from tqdm import tqdm
+
 from text2sql.logger import setup_console_logger
 from text2sql.utils import save_to_json
 
