@@ -8,8 +8,8 @@ model_name_or_path = "premai-io/prem-1B-SQL"
 # Load the dataset
 dataset = BirdDevDataset(
     data_path=data_path,
-    databases_folder_name="dev_databases",  # Change the name here if there is other name
-    json_file_name="dev.json",  # Change the name here if the name is different
+    databases_folder_name="test_databases",  # Change the name here if there is other name
+    json_file_name="test.json",  # Change the name here if the name is different
     num_fewshot=5,  # This is not to be changed
     model_name_or_path=model_name_or_path,
 )
