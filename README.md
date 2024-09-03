@@ -17,7 +17,7 @@ If you use conda, then you can create a submission environment by using the foll
 
 ```bash
 conda create -n submission python=3.10
-pip install -r requirements.txt
+pip install -U -r requirements.txt
 ```
 
 ## How to use the code base
