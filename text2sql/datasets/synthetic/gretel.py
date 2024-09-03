@@ -70,7 +70,7 @@ class GretelAIDataset(Text2SQLBaseDataset):
                         "db_path": None,
                     }
                     dataset.append(blob_content)
-            
+
             save_to_json(save_path=dataset_path / "train.json", json_object=dataset)
 
         super().__init__(

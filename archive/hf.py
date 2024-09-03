@@ -1,15 +1,17 @@
-import os 
+import os
 import sqlite3
 from collections import Counter
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 import torch
 import torch.nn.functional as F
 import transformers
+
 from text2sql.generator.base import BaseGenerator
 from text2sql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[GENERATOR-HF]")
+
 
 def get_results(dsn_or_db_path: str, predicted_sql: str):
     try:
@@ -19,7 +21,8 @@ def get_results(dsn_or_db_path: str, predicted_sql: str):
         predicted_res = cursor.fetchall()
         return set(predicted_res)
     except Exception:
-        return None 
+        return None
+
 
 def get_final_sql(data: list[dict], filter_by: str):
     if filter_by not in ["max_prob", "majority"]:
@@ -28,22 +31,24 @@ def get_final_sql(data: list[dict], filter_by: str):
     if filter_by == "max_prob":
         max_prob = -1
         final_sql = ""
-        result = None 
+        result = None
         for item in data.values():
-            if item['prob'] > max_prob:
-                max_prob = item['prob']
-                final_sql = item['sql']
+            if item["prob"] > max_prob:
+                max_prob = item["prob"]
+                final_sql = item["sql"]
                 result = item["result"]
         return final_sql
 
     elif filter_by == "majority":
-        results = [str(item['result']) for item in data.values() if item['result'] is not None]
+        results = [
+            str(item["result"]) for item in data.values() if item["result"] is not None
+        ]
         if not results:
             return None  # No valid results found
         most_common_result = Counter(results).most_common(1)[0][0]
         for item in data.values():
-            if str(item['result']) == most_common_result:
-                return item['sql']
+            if str(item["result"]) == most_common_result:
+                return item["sql"]
     return ""
 
 
@@ -58,7 +63,6 @@ from tqdm import tqdm
 
 from text2sql.dataset.base import BaseDataInstance, BaseDataset
 from text2sql.evaluator.from_sqlite import EvaluatorFromSQLite
-
 from text2sql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[GENERATOR]")
@@ -122,25 +126,25 @@ class BaseGenerator(ABC):
             return sqlparse.format(output_string)
 
     # TODO: Fuse execution with results
-    
+
     def generate_and_save_results(
         self,
         data: Union[BaseDataInstance, BaseDataset, List[dict]],
         temperature: Optional[float] = 0.0,
         max_new_tokens: Optional[int] = 256,
-        force: Optional[bool] = False, 
+        force: Optional[bool] = False,
         decode_strategy: Optional[str] = None,
         num_return_sequences: Optional[int] = 5,
         **kwargs: Optional[Any],
     ) -> dict:
         existing_response = self.load_results_from_folder()
-        
-        decode_strategy = decode_strategy if decode_strategy is not None else "No strategy"
-        print(decode_strategy)
-        
-        logger.info(
-            f"Going with decode strategy: {decode_strategy}"
+
+        decode_strategy = (
+            decode_strategy if decode_strategy is not None else "No strategy"
         )
+        print(decode_strategy)
+
+        logger.info(f"Going with decode strategy: {decode_strategy}")
 
         if decode_strategy != "No strategy":
             assert decode_strategy in ["max_prob", "majority"], "Invalid option"
@@ -148,7 +152,7 @@ class BaseGenerator(ABC):
         if existing_response is None or force == True:
             if force == True:
                 logger.warn("Forcing evaluation results")
-            
+
             to_dump = []
             for content in tqdm(data, total=len(data), desc="Generating results"):
                 sql = self.postprocess(
@@ -156,15 +160,16 @@ class BaseGenerator(ABC):
                         data_blob=content,
                         temperature=temperature,
                         max_new_tokens=max_new_tokens,
-                        decode_strategy=None if decode_strategy == "No strategy" else decode_strategy,
+                        decode_strategy=(
+                            None
+                            if decode_strategy == "No strategy"
+                            else decode_strategy
+                        ),
                         num_return_sequences=num_return_sequences,
                         **kwargs,
                     )
                 )
-                to_dump.append({
-                    **content,
-                    "generated": sql
-                })
+                to_dump.append({**content, "generated": sql})
 
             # to_dump = data.data if hasattr(data, "data") else data
             json.dump(
@@ -193,7 +198,7 @@ class GeneratorHFModel(BaseGenerator):
         experiment_folder: Optional[str] = None,
         hf_token: Optional[str] = None,
         device: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         self.hf_api_key = os.environ.get("HF_TOKEN") or hf_token
 
@@ -213,7 +218,7 @@ class GeneratorHFModel(BaseGenerator):
             self.client = transformers.AutoModelForCausalLM.from_pretrained(
                 pretrained_model_name_or_path=model_or_name_or_path,
                 token=hf_token,
-                **{"device_map": self.device, "torch_dtype": torch.float16, **kwargs}
+                **{"device_map": self.device, "torch_dtype": torch.float16, **kwargs},
             )
         else:
             self.client = model_or_name_or_path
@@ -224,39 +229,42 @@ class GeneratorHFModel(BaseGenerator):
             padding_side="right",
         )
         self.model_or_name_or_path = model_or_name_or_path
-    
-    
-    def _get_generated_dict(self, blob: dict, input_ids: list[torch.Tensor], outputs: Any) -> dict:
+
+    def _get_generated_dict(
+        self, blob: dict, input_ids: list[torch.Tensor], outputs: Any
+    ) -> dict:
         output_probabilities_dict = {}
         for i in range(len(outputs.sequences)):
             output_tokens = outputs.sequences[i].detach().tolist()
             output_tokens = (
-                output_tokens[len(input_ids[0]):] if 
-                len(output_tokens) > len(input_ids[0]) else output_tokens
+                output_tokens[len(input_ids[0]) :]
+                if len(output_tokens) > len(input_ids[0])
+                else output_tokens
             )
             scores = outputs.scores
             cumulative_prob = 1.0
 
             # TODO: Revisit this part to be mathemtically accurate as much as possible
             for j, token_logits in enumerate(scores):
-                token_probs = F.softmax(token_logits[0], dim=-1)  
-                token_prob = token_probs[output_tokens[j]].item()  
+                token_probs = F.softmax(token_logits[0], dim=-1)
+                token_prob = token_probs[output_tokens[j]].item()
                 cumulative_prob *= token_prob
-            
+
             output_probabilities_dict[i] = {
                 "tokens": output_tokens,
-                "prob": cumulative_prob
+                "prob": cumulative_prob,
             }
-        
+
         for i in range(len(output_probabilities_dict)):
             tokens = output_probabilities_dict[i]["tokens"]
             decoded = self.tokenizer.decode(tokens, skip_special_tokens=True)
 
             output_probabilities_dict[i]["sql"] = decoded
-            output_probabilities_dict[i]["result"] = get_results(blob["db_path"], decoded)
+            output_probabilities_dict[i]["result"] = get_results(
+                blob["db_path"], decoded
+            )
 
         return output_probabilities_dict
-
 
     def generate(
         self,
@@ -265,11 +273,11 @@ class GeneratorHFModel(BaseGenerator):
         max_new_tokens: Optional[int] = 256,
         decode_strategy: Optional[str] = None,
         num_return_sequences: Optional[int] = 5,
-        **kwargs
+        **kwargs,
     ):
         if decode_strategy is not None:
             assert decode_strategy in ["max_prob", "majority"], "Invalid option"
-        
+
         prompt = data_blob["prompt"]
         input_ids = self.tokenizer.encode(
             text=prompt,
@@ -282,7 +290,11 @@ class GeneratorHFModel(BaseGenerator):
         if decode_strategy is None:
             do_sample = False if temperature == 0.0 else True
             generation_config = transformers.GenerationConfig(
-                **{**kwargs, "temperature": temperature, "max_new_tokens": max_new_tokens}
+                **{
+                    **kwargs,
+                    "temperature": temperature,
+                    "max_new_tokens": max_new_tokens,
+                }
             )
             output_tokens = (
                 self.client.generate(
@@ -309,27 +321,26 @@ class GeneratorHFModel(BaseGenerator):
                 "top_k": 50,
                 "max_new_tokens": max_new_tokens,
                 "num_return_sequences": num_return_sequences,
-                "output_scores": True,  
-                "return_dict_in_generate": True,  
-                "pad_token_id": self.tokenizer.eos_token_id
+                "output_scores": True,
+                "return_dict_in_generate": True,
+                "pad_token_id": self.tokenizer.eos_token_id,
             }
             outputs = self.client.generate(input_ids=input_ids, **generation_config)
             output_prob_map_dict = self._get_generated_dict(
                 blob=data_blob, input_ids=input_ids, outputs=outputs
             )
-            
+
             generated = get_final_sql(
-                data=output_prob_map_dict,
-                filter_by=decode_strategy
+                data=output_prob_map_dict, filter_by=decode_strategy
             )
         return generated
-    
 
 
 import sqlite3
 from typing import Optional, Union
 
-import transformers 
+import transformers
+
 from text2sql.generator.huggingface import GeneratorHFModel
 from text2sql.logger import setup_console_logger
 
@@ -351,17 +362,18 @@ without introducing new errors.
 # SQL: 
 """
 
+
 def execute_sql(dsn_or_db_path: str, sql: str):
-    conn = sqlite3.connect(dsn_or_db_path) 
+    conn = sqlite3.connect(dsn_or_db_path)
     cursor = conn.cursor()
     error = None
     try:
         cursor.execute(sql)
         conn.commit()
-        return None 
+        return None
     except Exception as e:
         error = f"Error: {str(e)}"
-    return error 
+    return error
 
 
 class GeneratorHFModeWithExecution(GeneratorHFModel):
@@ -373,7 +385,7 @@ class GeneratorHFModeWithExecution(GeneratorHFModel):
         experiment_folder: Optional[str] = None,
         hf_token: Optional[str] = None,
         device: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             model_or_name_or_path=model_or_name_or_path,
@@ -382,23 +394,23 @@ class GeneratorHFModeWithExecution(GeneratorHFModel):
             type=type,
             hf_token=hf_token,
             device=device,
-            **kwargs
+            **kwargs,
         )
 
     def generate(
-        self, 
+        self,
         data_blob: dict,
         temperature: Optional[float] = 0.0,
         max_new_tokens: Optional[int] = 256,
-        **kwargs
+        **kwargs,
     ):
-        prompt = data_blob["prompt"] 
+        prompt = data_blob["prompt"]
         generation_config = transformers.GenerationConfig(
             **{
-                **kwargs, 
-                "temperature": temperature, 
+                **kwargs,
+                "temperature": temperature,
                 "max_new_tokens": max_new_tokens,
-                "do_sample": False if temperature == 0.0 else True
+                "do_sample": False if temperature == 0.0 else True,
             }
         )
         input_ids = self.tokenizer.encode(
@@ -408,16 +420,20 @@ class GeneratorHFModeWithExecution(GeneratorHFModel):
             max_length=self.tokenizer.model_max_length,
             truncation=False,
         ).to(self.device)
-        
+
         error_already_found = False
         max_retries = kwargs.get("max_retries", 1)
 
         for _ in range(max_retries):
-            output_tokens = self.client.generate(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                pad_token_id=self.tokenizer.eos_token_id,
-            ).detach().tolist()[0]
+            output_tokens = (
+                self.client.generate(
+                    input_ids=input_ids,
+                    generation_config=generation_config,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                )
+                .detach()
+                .tolist()[0]
+            )
             output_tokens = (
                 output_tokens[len(input_ids[0]) :]
                 if len(output_tokens) > len(input_ids[0])
@@ -426,20 +442,15 @@ class GeneratorHFModeWithExecution(GeneratorHFModel):
             generated = self.tokenizer.decode(output_tokens, skip_special_tokens=True)
             sql = self.postprocess(output_string=generated)
 
-            error = execute_sql(
-                dsn_or_db_path=data_blob["db_path"], 
-                sql=sql
-            )
+            error = execute_sql(dsn_or_db_path=data_blob["db_path"], sql=sql)
             if not error:
-                return sql 
-            
+                return sql
+
             # Now at this stage some error is found
             if not error_already_found:
                 prompt = data_blob["prompt"].split("# SQL:")[0].strip()
                 error_prompt = ERROR_HANDLING_PROMPT.format(
-                    existing_prompt=prompt,
-                    sql=sql,
-                    error_msg=error
+                    existing_prompt=prompt, sql=sql, error_msg=error
                 )
                 input_ids = self.tokenizer.encode(
                     text=error_prompt,
@@ -449,5 +460,4 @@ class GeneratorHFModeWithExecution(GeneratorHFModel):
                     truncation=False,
                 ).to(self.device)
                 error_already_found = True
-        return sql 
-
+        return sql

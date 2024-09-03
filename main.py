@@ -22,3 +22,5 @@ dataset = SpiderDataset(split="train", force_download=False).setup_dataset(
 dataset = GretelAIDataset(force_download=True).setup_dataset(
     model_name_or_path="premai-io/prem-1B-SQL", num_fewshot=3, num_rows=3
 )
+
+

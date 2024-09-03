@@ -1,0 +1,3 @@
+# Here are some very important todos to follow:
+# - design the executor in a very compatible way
+# - design the generators with a comon model_name_or_path 

@@ -1,2 +1,2 @@
 class Text2SQLEvaluatorBase:
-    pass 
+    pass
