@@ -1,15 +1,7 @@
 import json
-import os
-import random
-import shutil
 import sqlite3
-from collections import defaultdict
 from pathlib import Path
-from textwrap import dedent
-from typing import Optional, Union
-from zipfile import ZipFile
-
-import requests
+from typing import Union
 
 from text2sql.logger import setup_console_logger
 
