@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
-from text2sql.datasets.base import Text2SQLBaseDataset
-from text2sql.logger import setup_console_logger
+from premsql.datasets.base import Text2SQLBaseDataset
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[BIRD-DATASET]")
 
