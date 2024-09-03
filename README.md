@@ -13,11 +13,14 @@ git checkout -b submission
 
 Once done, then you need to create a new virual environment. This can be created with pyenv or conda. Now inside that, you can run the following to install all the requirements. 
 
-```
+If you use conda, then you can create a submission environment by using the following command and then install the requirements.
+
+```bash
+conda create -n submission python=3.10
 pip install -r requirements.txt
 ```
 
-## General flow on how to use the code base to evaluate Prem text2sql model
+## How to use the code base
 
 This tutorial shows this for dev dataset but this same thing can be employed
 for test dataset.
