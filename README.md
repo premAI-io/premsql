@@ -1,32 +1,29 @@
-# Text2SQL Submission to BirdBench 
+# Text2SQL Submission to BirdBench
 
-This branch of the repository contains the code to reproduce the results of our approach to the BirdBench challenge. 
+This branch contains the code to reproduce the results of our approach to the BirdBench challenge.
 
-## Setup and installation
+## Setup and Installation
 
-To setup the code base to run the evaluation you need to first clone the repo and switch to the `submission` branch. 
+To set up the codebase and run the evaluation, first clone the repository and switch to the `submission` branch:
 
 ```bash
 git clone https://github.com/premAI-io/text2sql.git
 git checkout -b submission
 ```
 
-Once done, then you need to create a new virual environment. This can be created with pyenv or conda. Now inside that, you can run the following to install all the requirements. 
-
-If you use conda, then you can create a submission environment by using the following command and then install the requirements.
+Next, create a new virtual environment. This can be done using `pyenv` or `conda`. If using `conda`, you can create the environment and install the requirements as follows:
 
 ```bash
 conda create -n submission python=3.10
 pip install -U -r requirements.txt
 ```
 
-## How to use the code base
+## Usage
 
-This tutorial shows this for dev dataset but this same thing can be employed
-for test dataset.
-To begin, ensure that your dataset follows the required directory structure:
+Ensure that your dataset follows the required directory structure. For example, if you downloaded the dev dataset and stored it in the `./data/bird` folder, it should have the following structure:
 
-```python
+```plaintext
+bird
 ├── dev_databases
 │   ├── california_schools
 │       ├── california_schools.sqlite
@@ -46,81 +43,106 @@ To begin, ensure that your dataset follows the required directory structure:
 └── dev_tied_append.json
 ```
 
-In this example, we use the BirdBench development dataset. The dataset structure should include the following mandatory components:
+### Dataset Structure Requirements
 
-1. **`dev_databases` Folder**: This directory contains subfolders named after each database, each containing a corresponding `.sqlite` file. The `.sqlite` file must match the subfolder's name exactly.
+The dataset must include the following:
 
-2. **`dev.json` File**: This file contains metadata, including mappings of database paths, questions, filters, and other relevant information.
+1. **`dev_databases` Folder**: This folder contains subfolders for each database, each with a corresponding `.sqlite` file matching the subfolder's name.
+   
+2. **`dev.json` File**: Contains metadata, including mappings of database paths, questions, filters, and other relevant information.
 
-If your dataset files are named differently (e.g., for test datasets), you can either rename them to match this structure or adjust the names while you instantiate them with our API. Here is an example on how to do that. 
+### Notes
+
+For our approach, these two components are mandatory. We assume all databases are `.sqlite` files. 
+
+If your dataset files are named differently (e.g., for `test_dataset`), you can rename them to match this structure or adjust the names when instantiating them with our API, as shown below:
 
 ```python
 from text2sql.dataset import BirdDevDataset
 
-# inside that it should have the json file and dev_databases folder
-data_path = "./path/to/test/dataset"
-model_name_or_path = "anindya64/text2sql_draft"
+# Define paths and model
+data_path = "./path/to/test/dataset"              # e.g., ./data/bird
+model_name_or_path = "premai-io/prem-1B-SQL"      # Public model
 
 dataset = BirdDevDataset(
     data_path=data_path,
-    databases_folder_name="dev_databases",  # Change the name here if there is other name
-    json_file_name="dev.json",              # Change the name here if the name is different
-    num_fewshot=5,                          # This is not to be changed
-    model_name_or_path=model_name_or_path,
+    databases_folder_name="dev_databases",  # Change if named differently
+    json_file_name="dev.json",              # Change if named differently
+    num_fewshot=5,                          # Do not change
+    model_name_or_path=model_name_or_path,  # Do not change
 )
 ```
-So to summarize the only thing which is rigid is the structure of the data, i.e.
-
-- A parent folder containing folders representing different database.
-- Inside each database folder, a .sqlite file with the same name as the database folder name.
-- A .json file which has all the information about the different DBs, question etc.
 
 ### Generator
 
-A generator object of our text2sql API helps to generate the results. This is how we use it:
-
-Now let's move into the `Generator` section.
+The `Generator` object of our Text2SQL API generates results. Here's how to use it:
 
 ```python
 from text2sql.generator.from_hf import GeneratorHFModel
 
 generator = GeneratorHFModel(
     model_or_name_or_path=model_name_or_path,
-    experiment_name="test_pretext2sql",                 # Give whatever name you want
-    type="test",                                        # This should not change
-    device="cuda:0",                                    # Cuda device mapping
-    hf_token="xxx-xxxx-xxxx"                            # This is Optional
+    experiment_name="test_pretext2sql",                 # Name of your experiment
+    type="test",                                        # Do not change
+    device="cuda:0",                                    # CUDA device mapping
+    hf_token="xxx-xxxx-xxxx"                            # Optional
 )
 
 responses = generator.generate_and_save_results(
     data=dataset,
-    temperature=0.1,    # This is not to be changed
-    max_retries=5       # This is not to be changed
+    temperature=0.1,    # Do not change
+    max_retries=5,      # Do not change
+    force=True,         # Set to True if re-generation is needed
 )
-
 ```
-For this testing, we are going to use our official model and the `max_retries` and `temperature` parameters are not subjected to change. Once all the responses are generated, a folder named `experiment` is created under the folder in which the program is run. So in this example, a folder named: `text2sql/experiments/test/test_pretext2sql` will be created. Inside this you will find a `predict.json` file which will contain the following information (each blob of the JSON):
+
+### Output Structure
+
+Responses generated by the `Generator` are saved inside `text2sql/experiments/test/test_pretext2sql`, determined by the `experiment_name`. The folder will contain the following:
+
+- **`predict.json`**: Contains details of each response run, extending the original `dev.json` (or `test.json`) file with additional information like `generated` SQL queries.
+
+- **`predict.sql`**: A sequential list of generated SQL queries. Ideally, the SQLs should match the `generated` entries in `predict.json`.
+
+Here is how the `predict.json` looks like:
 
 ```json
-{
-    "question_id": 0,
-    "db_id": "california_schools",
-    "question": "What is the highest eligible free rate for K-12 students in the schools in Alameda County?",
-    "evidence": "Eligible free rate for K-12 = `Free Meal Count (K-12)` / `Enrollment (K-12)`",
-    "SQL": "SELECT `Free Meal Count (K-12)` / `Enrollment (K-12)` FROM frpm WHERE `County Name` = 'Alameda' ORDER BY (CAST(`Free Meal Count (K-12)` AS REAL) / `Enrollment (K-12)`) DESC LIMIT 1",
-    "difficulty": "simple",
-    "db_path": "/root/anindya/text2sql/data/bird/validation/dev_databases/california_schools/california_schools.sqlite",
-    "prompt": "<\uff5cbegin\u2581of\u2581sentence\uff5c>You ... students in the schools in Alameda County?\n\n# SQL:\n",
-    "generated": "SELECT MAX(CAST(T1.`Free Meal Count (K-12)` AS REAL) / T1.`Enrollment (K-12)`) FROM frpm AS T1 INNER JOIN schools AS T2 ON T1.CDSCode = T2.CDSCode WHERE T2.County = 'Alameda'",
-},
+    {
+        "question_id": 0,
+        "db_id": "california_schools",
+        "question": "What is the highest eligible free rate for K-12 students in the schools in Alameda County?",
+        "evidence": "Eligible free rate for K-12 = `Free Meal Count (K-12)` / `Enrollment (K-12)`",
+        "SQL": "SELECT `Free Meal Count (K-12)` / `Enrollment (K-12)` FROM frpm WHERE `County Name` = 'Alameda' ORDER BY (CAST(`Free Meal Count (K-12)` AS REAL) / `Enrollment (K-12)`) DESC LIMIT 1",
+        "difficulty": "simple",
+        "db_path": "data/bird/validation/dev_databases/california_schools/california_schools.sqlite",
+        "prompt": "<\uff5cbegin\u2581of\u2581sentence\uff5c>You are an AI programming assistant, utilizing the ... # SQL:\n",
+        "generated": "SELECT MAX(CAST(T2.`Free Meal Count (K-12)` AS REAL) / T2.`Enrollment (K-12)`) FROM schools AS T1 INNER JOIN frpm AS T2 ON T1.CDSCode = T2.CDSCode WHERE T1.County = 'Alameda'",
+    },
+    {
+        "question_id": 1,
+        "db_id": "california_schools",
+        "question": "Please list the lowest three eligible free rates for students aged 5-17 in continuation schools.",
+        "evidence": "Eligible free rates for students aged 5-17 = `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)`",
+        "SQL": "SELECT `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)` FROM frpm WHERE `Educational Option Type` = 'Continuation School' AND `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)` IS NOT NULL ORDER BY `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)` ASC LIMIT 3",
+        "difficulty": "moderate",
+        "db_path": "data/bird/validation/dev_databases/california_schools/california_schools.sqlite",
+        "prompt": "<\uff5cbegin\u2581of\u2581sentence\uff5c>You are an AI programming assistant, utilizing the ... for students aged 5-17 in continuation schools.\n\n# SQL:\n",
+        "generated": "SELECT CAST(`Free Meal Count (Ages 5-17)` AS REAL) / `Enrollment (Ages 5-17)` FROM frpm WHERE `Educational Option Type` = 'Continuation School' ORDER BY `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)` ASC LIMIT 3",
+    }
 ```
 
-### Evaluator
+Here is how the `predict.sql` looks like:
 
-This is the simple evaluator whose logic has been taken from the main [BirdBench code](https://github.com/AlibabaResearch/DAMO-ConvAI/tree/main/bird). However there is no multiprocessing applied, so evaluation is been done iteratively. If you want to use your own evaluator then you can use the information from `generated` key of the each blob inside the `predict.json` file which is saved after the generation is complete. It also contains all the additional information which was there in the dataset.
+```SQL
+SELECT MAX(CAST(T2.`Free Meal Count (K-12)` AS REAL) / T2.`Enrollment (K-12)`) FROM schools AS T1 INNER JOIN frpm AS T2 ON T1.CDSCode = T2.CDSCode WHERE T1.County = 'Alameda'
+SELECT CAST(`Free Meal Count (Ages 5-17)` AS REAL) / `Enrollment (Ages 5-17)` FROM frpm WHERE `Educational Option Type` = 'Continuation School' ORDER BY `Free Meal Count (Ages 5-17)` / `Enrollment (Ages 5-17)` ASC LIMIT 3
+```
 
-Here is the code on how to evaluate using prem text2sql API. 
+> Now after this, you can use our evaluator or you can use your own to evaluate it. If the judges uses their own evaluator then it is requested to also do the same evaluation using our evaluator (just to see they are equivalent). If not then we from our side can re-iterate on future versions. 
 
+### Evaluation
+
+We provide a simple evaluator based on the main [BirdBench code](https://github.com/AlibabaResearch/DAMO-ConvAI/tree/main/bird). Evaluation is done iteratively without multiprocessing. Here’s how to use our evaluator:
 
 ```python
 from text2sql.executor.from_sqlite import ExecutorFromSQLite
@@ -129,6 +151,7 @@ executor = ExecutorFromSQLite(
     experiment_path=generator.experiment_path,
 )
 
+# Compute accuracy and VES metrics
 ex_acc = executor.compute(
     model_responses=responses,
     metric="accuracy",
@@ -145,10 +168,11 @@ print(f"Accuracy: {ex_acc}")
 print(f"VES: {ves}")
 ```
 
-Now the same script is been written in the main.py file. Make changes accordingly based on the dataset file path and then run:
+The same script is available in [main.py](/main.py) and [example.ipynb](/example.ipynb). Adjust paths based on your dataset file location and run:
 
-```
+```bash
 python main.py
 ```
 
-That is how we load dataset, generate predictions and evaluate the generations. For any kind of questions please reach us to: anindyadeep@premai.io
+This guide covers loading datasets, generating predictions, and evaluating results. For questions, contact: anindyadeep@premai.io
+
