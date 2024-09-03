@@ -3,7 +3,7 @@ from text2sql.generator.from_hf import GeneratorHFModel
 from text2sql.executor.from_sqlite import ExecutorFromSQLite
 
 data_path = "./path/to/test/dataset"
-model_name_or_path = "anindya64/text2sql_draft"
+model_name_or_path = "premai-io/prem-1B-SQL"
 
 # Load the dataset
 dataset = BirdDevDataset(
