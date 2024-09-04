@@ -15,6 +15,7 @@ from premsql.datasets.utils import (
     filter_options,
     get_random_few_shot_prompts,
     tokenize_fn,
+    get_accepted_filters
 )
 from premsql.logger import setup_console_logger
 
@@ -216,6 +217,14 @@ class Text2SQLBaseDataset(ABC):
         self.split = split
         self.hf_token = hf_token if hf_token else os.environ.get("HF_TOKEN", None)
 
+    @property
+    def raw_dataset(self):
+        return self._text2sql_dataset.dataset
+
+    @property
+    def filter_availables(self):
+        return get_accepted_filters(data=self.dataset)
+
     @abstractmethod
     def setup_dataset(
         self,
@@ -242,14 +251,10 @@ class Text2SQLBaseDataset(ABC):
         self.dataset = Text2SQLBaseInstance(dataset=self.dataset).apply_prompt(
             num_fewshot=num_fewshot, prompt_template=prompt_template
         )
-        return (
-            self.dataset
-            if self.split != "train"
-            else SupervisedDatasetForTraining(
-                dataset=self.dataset,
-                model_name_or_path=model_name_or_path,
-                hf_token=self.hf_token,
-            )
+        return SupervisedDatasetForTraining(
+            dataset=self.dataset, 
+            model_name_or_path=model_name_or_path, 
+            hf_token=self.hf_token
         )
 
     def __len__(self):
@@ -257,3 +262,38 @@ class Text2SQLBaseDataset(ABC):
 
     def __getitem__(self, idx):
         return dict(**self.dataset[idx])
+
+
+class StandardDataset(Text2SQLBaseDataset):
+    def __init__(
+        self,
+        split: str,
+        dataset_path: Union[str, Path],
+        database_folder_name: str,
+        json_file_name: str,
+        hf_token: Optional[str] = None,
+    ):
+        super().__init__(
+            split=split,
+            dataset_path=dataset_path,
+            database_folder_name=database_folder_name,
+            json_file_name=json_file_name,
+            hf_token=hf_token,
+        )
+    
+    def setup_dataset(
+        self,
+        filter_by: tuple | None = None,
+        num_rows: int | None = None,
+        num_fewshot: int | None = None,
+        model_name_or_path: str | None = None,
+        prompt_template: str | None = None,
+    ):
+        logger.info("Setting up Dataset")
+        return super().setup_dataset(
+            filter_by, 
+            num_rows, 
+            num_fewshot, 
+            model_name_or_path, 
+            prompt_template
+        )
