@@ -3,7 +3,7 @@ import random
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
-from typing import Sequence, Union
+from typing import Sequence, Union, Optional 
 
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer
@@ -12,6 +12,20 @@ from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[UTILS]")
 
+
+def print_data(data: dict):
+    if "prompt" in data:
+        prompt = data["prompt"]
+        data["prompt"] = prompt[:100] + "...." + prompt[-100:]
+        
+    elif "prompt" in data["raw"]:
+        prompt = data["raw"]["prompt"]
+        data["raw"]["prompt"] = prompt[:100] + "...." + prompt[-100:]
+    
+    else:
+        raise ValueError("Prompt key not found in data")
+
+    return data 
 
 def save_to_json(save_path: Union[str, Path], json_object: dict):
     try:
@@ -60,13 +74,21 @@ def get_random_few_shot_prompts(dataset: list[dict], num_few_shot: int):
     return few_shot_prompts
 
 
-def filter_options(data: list[dict], filter_by: tuple):
-    filter_key, filter_value = filter_by
+def get_accepted_filters(data: list[dict]) -> Sequence[str]:
+    key_num_mapping = {}
+    for key in data[0].keys():
+        key_num_mapping[key] = len(set([content[key] for content in data]))
 
-    not_to_filter = ["question", "SQL"]
-    accepted_keys = [
-        key for key in accepted_keys if key in data[0] if key not in not_to_filter
-    ]
+    accepted_keys = []
+    for key, num in key_num_mapping.items():
+        if num < len(data) * 0.5 and key != "db_path":
+            accepted_keys.append(key)
+    return accepted_keys
+
+
+def filter_options(data: list[dict], filter_by: tuple, accepted_keys: Optional[Sequence[str]] = None):
+    filter_key, filter_value = filter_by
+    accepted_keys =  get_accepted_filters(data=data) if accepted_keys is None else accepted_keys
 
     assert filter_key in accepted_keys, ValueError(
         f"Filtering is supported for keys: `{''.join(accepted_keys)}`"
