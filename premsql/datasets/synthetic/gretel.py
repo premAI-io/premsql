@@ -25,6 +25,7 @@ class GretelAIInstance(Text2SQLBaseInstance):
         num_fewshot: Optional[int] = None,
         prompt_template: Optional[str] = BASE_TEXT2SQL_PROMPT,
     ):
+        prompt_template = BASE_TEXT2SQL_PROMPT if prompt_template is None else prompt_template
         for blob in tqdm(self.dataset, total=len(self.dataset), desc="Applying prompt"):
             few_shot_prompt = (
                 ""
