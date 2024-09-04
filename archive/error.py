@@ -5,15 +5,15 @@ from typing import Optional, Sequence, Union
 
 from transformers import AutoTokenizer
 
-from text2sql.dataset.base import BaseDataset
-from text2sql.dataset.bird.train import BirdTrainSet
-from text2sql.dataset.domains.common import DomainDatasetBase
-from text2sql.dataset.spider.common import SpiderDatasetBase
-from text2sql.dataset.utils import tokenize_fn
-from text2sql.evaluator.from_sqlite import EvaluatorFromSQLite
-from text2sql.generator.huggingface import GeneratorHFModel
-from text2sql.generator.premai import GeneratorPremAI
-from text2sql.logger import setup_console_logger
+from premsql.dataset.base import BaseDataset
+from premsql.dataset.bird.train import BirdTrainSet
+from premsql.dataset.domains.common import DomainDatasetBase
+from premsql.dataset.spider.common import SpiderDatasetBase
+from premsql.dataset.utils import tokenize_fn
+from premsql.evaluator.from_sqlite import EvaluatorFromSQLite
+from premsql.generator.huggingface import GeneratorHFModel
+from premsql.generator.premai import GeneratorPremAI
+from premsql.logger import setup_console_logger
 
 IGNORE_INDEX = -100
 logger = setup_console_logger("[ERROR-DATASET]")

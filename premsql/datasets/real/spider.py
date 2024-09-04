@@ -3,13 +3,13 @@ from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
 
-from text2sql.datasets.base import Text2SQLBaseDataset
-from text2sql.logger import setup_console_logger
+from premsql.datasets.base import Text2SQLBaseDataset
+from premsql.logger import setup_console_logger
 
-logger = setup_console_logger("[DOMAINS-DATASET]")
+logger = setup_console_logger("[SPIDER-DATASET]")
 
 
-class DomainsDataset(Text2SQLBaseDataset):
+class SpiderUnifiedDataset(Text2SQLBaseDataset):
     def __init__(
         self,
         split: str,
@@ -18,15 +18,15 @@ class DomainsDataset(Text2SQLBaseDataset):
         force_download: Optional[bool] = False,
     ):
         dataset_folder = Path(dataset_folder)
-        domains_folder = dataset_folder / "domains"
-        if not domains_folder.exists() or force_download:
-            domains_folder.mkdir(parents=True, exist_ok=True)
+        spider_folder = dataset_folder / "spider"
+        if not spider_folder.exists() or force_download:
+            spider_folder.mkdir(parents=True, exist_ok=True)
 
             # Download it from hf hub
             snapshot_download(
-                repo_id="premai-io/domains",
+                repo_id="premai-io/spider",
                 repo_type="dataset",
-                local_dir=dataset_folder / "domains",
+                local_dir=dataset_folder / "spider",
                 force_download=force_download,
             )
 
@@ -36,14 +36,14 @@ class DomainsDataset(Text2SQLBaseDataset):
         json_file_name = "train.json" if split == "train" else "validation.json"
         super().__init__(
             split=split,
-            dataset_path=domains_folder,
-            database_folder_name="databases",
+            dataset_path=spider_folder,
+            database_folder_name="database",
             json_file_name=json_file_name,
             hf_token=hf_token,
         )
-        logger.info("Loaded Domains Dataset")
+        logger.info("Loaded Spider Dataset")
 
-        # An extra step for Domains Dataset so that it can be
+        # An extra step for Spider Dataset so that it can be
         # compatible with the Base dataset and Base instance
 
         for content in self.dataset:
@@ -57,7 +57,7 @@ class DomainsDataset(Text2SQLBaseDataset):
         model_name_or_path: str | None = None,
         prompt_template: str | None = None,
     ):
-        logger.info("Setting up Domains Dataset")
+        logger.info("Setting up Spider Dataset")
         return super().setup_dataset(
             filter_by, num_rows, num_fewshot, model_name_or_path, prompt_template
         )

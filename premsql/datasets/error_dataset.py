@@ -4,11 +4,11 @@ from typing import Optional, Union
 
 from tqdm import tqdm
 
-from text2sql.datasets.base import SupervisedDatasetForTraining, Text2SQLBaseInstance
-from text2sql.datasets.prompts import ERROR_HANDLING_PROMPT
-from text2sql.evaluator.base import Text2SQLEvaluatorBase
-from text2sql.generators.base import Text2SQLGeneratorBase
-from text2sql.logger import setup_console_logger
+from premsql.datasets.base import SupervisedDatasetForTraining, Text2SQLBaseInstance
+from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
+from premsql.evaluator.base import Text2SQLEvaluatorBase
+from premsql.generators.base import Text2SQLGeneratorBase
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[ERROR-HANDLING-DATASET]")
 

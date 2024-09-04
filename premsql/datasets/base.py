@@ -10,13 +10,13 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from text2sql.datasets.prompts import BASE_TEXT2SQL_PROMPT
-from text2sql.datasets.utils import (
+from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
+from premsql.datasets.utils import (
     filter_options,
     get_random_few_shot_prompts,
     tokenize_fn,
 )
-from text2sql.logger import setup_console_logger
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[DATASET]")
 

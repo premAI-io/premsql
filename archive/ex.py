@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 from func_timeout import FunctionTimedOut, func_timeout
 from tqdm import tqdm
 
-from text2sql.logger import setup_console_logger
-from text2sql.utils import save_to_json
+from premsql.logger import setup_console_logger
+from premsql.datasets.utils import save_to_json
 
 logger = setup_console_logger(name="[EVALUATION]")
 

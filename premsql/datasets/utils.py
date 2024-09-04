@@ -8,7 +8,7 @@ from typing import Sequence, Union
 from tqdm import tqdm
 from transformers import PreTrainedTokenizer
 
-from text2sql.logger import setup_console_logger
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[UTILS]")
 

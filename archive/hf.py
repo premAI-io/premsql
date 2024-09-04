@@ -7,8 +7,8 @@ import torch
 import torch.nn.functional as F
 import transformers
 
-from text2sql.generator.base import BaseGenerator
-from text2sql.logger import setup_console_logger
+from premsql.generators.base import Text2SQLGeneratorBase
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[GENERATOR-HF]")
 
@@ -61,9 +61,9 @@ from typing import Any, List, Optional, Union
 import sqlparse
 from tqdm import tqdm
 
-from text2sql.dataset.base import BaseDataInstance, BaseDataset
-from text2sql.evaluator.from_sqlite import EvaluatorFromSQLite
-from text2sql.logger import setup_console_logger
+from premsql.dataset.base import BaseDataInstance, BaseDataset
+from premsql.evaluator.from_sqlite import EvaluatorFromSQLite
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[GENERATOR]")
 
@@ -341,8 +341,8 @@ from typing import Optional, Union
 
 import transformers
 
-from text2sql.generator.huggingface import GeneratorHFModel
-from text2sql.logger import setup_console_logger
+from premsql.generator.huggingface import GeneratorHFModel
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[HF-EX]")
 ERROR_HANDLING_PROMPT = """

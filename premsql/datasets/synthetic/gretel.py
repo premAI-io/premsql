@@ -4,14 +4,14 @@ from typing import Optional, Union
 from datasets import load_dataset
 from tqdm import tqdm
 
-from text2sql.datasets.base import (
+from premsql.datasets.base import (
     SupervisedDatasetForTraining,
     Text2SQLBaseDataset,
     Text2SQLBaseInstance,
 )
-from text2sql.datasets.prompts import BASE_TEXT2SQL_PROMPT
-from text2sql.datasets.utils import filter_options, save_to_json
-from text2sql.logger import setup_console_logger
+from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
+from premsql.datasets.utils import filter_options, save_to_json
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[GRETELAI-DATASET]")
 
@@ -25,6 +25,7 @@ class GretelAIInstance(Text2SQLBaseInstance):
         num_fewshot: Optional[int] = None,
         prompt_template: Optional[str] = BASE_TEXT2SQL_PROMPT,
     ):
+        prompt_template = BASE_TEXT2SQL_PROMPT if prompt_template is None else prompt_template
         for blob in tqdm(self.dataset, total=len(self.dataset), desc="Applying prompt"):
             few_shot_prompt = (
                 ""

@@ -1,7 +1,7 @@
-from text2sql.datasets.real.bird import BirdDataset
-from text2sql.datasets.real.domains import DomainsDataset
-from text2sql.datasets.real.spider import SpiderDataset
-from text2sql.datasets.synthetic.gretel import GretelAIDataset
+from premsql.datasets.real.bird import BirdDataset
+from premsql.datasets.real.domains import DomainsDataset
+from premsql.datasets.real.spider import SpiderDataset
+from premsql.datasets.synthetic.gretel import GretelAIDataset
 
 # dataset = BirdDataset(split="train", force_download=False).setup_dataset(
 #     model_name_or_path="premai-io/prem-1B-SQL", num_fewshot=3, num_rows=3
