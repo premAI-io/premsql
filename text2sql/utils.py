@@ -1,7 +1,10 @@
+import random 
 import json
 import sqlite3
 from pathlib import Path
 from typing import Union
+from collections import defaultdict
+from textwrap import dedent
 
 from text2sql.logger import setup_console_logger
 
@@ -53,3 +56,32 @@ def _filter_options(data: list[dict], filter_by: tuple, accepted_keys: list[str]
 
     filtered_data = [content for content in data if content[filter_key] == filter_value]
     return filtered_data
+
+
+def get_random_few_shot_prompts(dataset: list[dict], num_few_shot: int):
+    assert "db_id" in dataset[0], ValueError(
+        "db_id key should be present to use this function"
+    )
+
+    grouped_content = defaultdict(list)
+    few_shot_prompts = {}
+    template = dedent(
+        """
+    Question: {question}
+    SQL: {sql}
+    """
+    )
+
+    for content in dataset:
+        grouped_content[content["db_id"]].append(content)
+
+    for db_id, contents in grouped_content.items():
+        num_few_shot = min(num_few_shot, len(contents))
+        random_sample = random.sample(contents, num_few_shot)
+
+        few_shot_prompt = "".join(
+            template.format(question=element["question"], sql=element["SQL"])
+            for element in random_sample
+        )
+        few_shot_prompts[db_id] = few_shot_prompt
+    return few_shot_prompts
