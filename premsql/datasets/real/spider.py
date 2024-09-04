@@ -9,7 +9,7 @@ from premsql.logger import setup_console_logger
 logger = setup_console_logger("[SPIDER-DATASET]")
 
 
-class SpiderDataset(Text2SQLBaseDataset):
+class SpiderUnifiedDataset(Text2SQLBaseDataset):
     def __init__(
         self,
         split: str,
