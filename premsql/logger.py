@@ -1,5 +1,6 @@
 import logging
 
+
 def setup_console_logger(name, level=logging.INFO):
     """Function to setup a console logger."""
     formatter = logging.Formatter(
