@@ -85,7 +85,6 @@ generator = GeneratorHFModel(
     experiment_name="test_pretext2sql",                 # Name of your experiment
     type="test",                                        # Do not change
     device="cuda:0",                                    # CUDA device mapping
-    hf_token="xxx-xxxx-xxxx"                            # Optional
 )
 
 responses = generator.generate_and_save_results(
