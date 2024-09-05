@@ -7,15 +7,15 @@ from pathlib import Path
 from typing import Optional, Sequence, Union
 
 import torch
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from transformers import AutoTokenizer
 
 from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
 from premsql.datasets.utils import (
     filter_options,
+    get_accepted_filters,
     get_random_few_shot_prompts,
     tokenize_fn,
-    get_accepted_filters
 )
 from premsql.logger import setup_console_logger
 
@@ -252,9 +252,9 @@ class Text2SQLBaseDataset(ABC):
             num_fewshot=num_fewshot, prompt_template=prompt_template
         )
         return SupervisedDatasetForTraining(
-            dataset=self.dataset, 
-            model_name_or_path=model_name_or_path, 
-            hf_token=self.hf_token
+            dataset=self.dataset,
+            model_name_or_path=model_name_or_path,
+            hf_token=self.hf_token,
         )
 
     def __len__(self):
@@ -280,7 +280,7 @@ class StandardDataset(Text2SQLBaseDataset):
             json_file_name=json_file_name,
             hf_token=hf_token,
         )
-    
+
     def setup_dataset(
         self,
         filter_by: tuple | None = None,
@@ -291,9 +291,5 @@ class StandardDataset(Text2SQLBaseDataset):
     ):
         logger.info("Setting up Dataset")
         return super().setup_dataset(
-            filter_by, 
-            num_rows, 
-            num_fewshot, 
-            model_name_or_path, 
-            prompt_template
+            filter_by, num_rows, num_fewshot, model_name_or_path, prompt_template
         )

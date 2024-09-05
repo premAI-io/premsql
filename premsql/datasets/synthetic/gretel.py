@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional, Union
 
 from datasets import load_dataset
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from premsql.datasets.base import (
     SupervisedDatasetForTraining,
@@ -25,7 +25,9 @@ class GretelAIInstance(Text2SQLBaseInstance):
         num_fewshot: Optional[int] = None,
         prompt_template: Optional[str] = BASE_TEXT2SQL_PROMPT,
     ):
-        prompt_template = BASE_TEXT2SQL_PROMPT if prompt_template is None else prompt_template
+        prompt_template = (
+            BASE_TEXT2SQL_PROMPT if prompt_template is None else prompt_template
+        )
         for blob in tqdm(self.dataset, total=len(self.dataset), desc="Applying prompt"):
             few_shot_prompt = (
                 ""

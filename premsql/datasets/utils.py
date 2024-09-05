@@ -3,9 +3,9 @@ import random
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
-from typing import Sequence, Union, Optional 
+from typing import Optional, Sequence, Union
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from transformers import PreTrainedTokenizer
 
 from premsql.logger import setup_console_logger
@@ -17,15 +17,16 @@ def print_data(data: dict):
     if "prompt" in data:
         prompt = data["prompt"]
         data["prompt"] = prompt[:100] + "...." + prompt[-100:]
-        
+
     elif "prompt" in data["raw"]:
         prompt = data["raw"]["prompt"]
         data["raw"]["prompt"] = prompt[:100] + "...." + prompt[-100:]
-    
+
     else:
         raise ValueError("Prompt key not found in data")
 
-    return data 
+    return data
+
 
 def save_to_json(save_path: Union[str, Path], json_object: dict):
     try:
@@ -86,9 +87,13 @@ def get_accepted_filters(data: list[dict]) -> Sequence[str]:
     return accepted_keys
 
 
-def filter_options(data: list[dict], filter_by: tuple, accepted_keys: Optional[Sequence[str]] = None):
+def filter_options(
+    data: list[dict], filter_by: tuple, accepted_keys: Optional[Sequence[str]] = None
+):
     filter_key, filter_value = filter_by
-    accepted_keys =  get_accepted_filters(data=data) if accepted_keys is None else accepted_keys
+    accepted_keys = (
+        get_accepted_filters(data=data) if accepted_keys is None else accepted_keys
+    )
 
     assert filter_key in accepted_keys, ValueError(
         f"Filtering is supported for keys: `{''.join(accepted_keys)}`"

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional, Union
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from premsql.datasets.base import SupervisedDatasetForTraining, Text2SQLBaseInstance
 from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
@@ -46,7 +46,7 @@ class ErrorDataset:
     def from_existing(
         cls, eval_path: Union[str, Path], model_name_or_path: Optional[str] = None
     ):
-        pass
+        raise NotImplementedError
 
     @classmethod
     def from_generator(
@@ -67,7 +67,7 @@ class ErrorDataset:
             dataset, total=len(dataset), desc="Generating results and evaluating"
         ):
             prompt = content["prompt"]
-            input_ids = generator.tokenizere.encode(
+            input_ids = generator.tokenizer.encode(
                 text=prompt,
                 return_tensors="pt",
                 padding="longest",

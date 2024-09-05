@@ -1,18 +1,18 @@
 from pathlib import Path
 from typing import Optional, Union
 
-from premsql.datasets.real.bird import BirdDataset
-from premsql.datasets.real.spider import SpiderUnifiedDataset
-from premsql.datasets.real.domains import DomainsDataset
-from premsql.datasets.synthetic.gretel import GretelAIDataset
 from premsql.datasets.base import StandardDataset, Text2SQLBaseDataset
-
+from premsql.datasets.real.bird import BirdDataset
+from premsql.datasets.real.domains import DomainsDataset
+from premsql.datasets.real.spider import SpiderUnifiedDataset
+from premsql.datasets.synthetic.gretel import GretelAIDataset
 from premsql.datasets.utils import get_accepted_filters
+
 
 class Text2SQLDataset:
     def __init__(
         self,
-        dataset_name: str, 
+        dataset_name: str,
         split: str,
         dataset_folder: Optional[Union[str, Path]] = "./data",
         hf_token: Optional[str] = None,
@@ -33,7 +33,7 @@ class Text2SQLDataset:
             hf_token=hf_token,
             force_download=force_download,
         )
-    
+
     @property
     def raw_dataset(self):
         return self._text2sql_dataset.dataset
@@ -53,12 +53,13 @@ class Text2SQLDataset:
         return self._text2sql_dataset.setup_dataset(
             filter_by, num_rows, num_fewshot, model_name_or_path, prompt_template
         )
-    
+
+
 __all__ = [
     "StandardDataset",
     "GretelAIDataset",
     "SpiderUnifiedDataset",
     "BirdDataset",
     "DomainsDataset",
-    "Text2SQLDataset"
+    "Text2SQLDataset",
 ]
