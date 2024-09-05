@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "text2sql"
+version = "0.1.0"
+description = ""
+authors = ["Anindyadeep <proanindyadeep@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+datasets = "^2.20.0"
+einops = "^0.8.0"
+black = "^24.4.2"
+fastapi = "^0.112.0"
+huggingface-hub = "^0.24.5"
+isort = "^5.13.2"
+numpy = "^1.26.3"
+torch = "^2.4.0"
+tqdm = "^4.66.4"
+transformers = "^4.43.3"
+mysql-connector-python = "^9.0.0"
+SQLAlchemy = "^2.0.30"
+sqlparse = "^0.5.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
