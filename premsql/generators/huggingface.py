@@ -3,7 +3,6 @@ from typing import Optional, Union
 
 import torch
 import transformers
-
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 
@@ -56,6 +55,10 @@ class Text2SQLGeneratorHF(Text2SQLGeneratorBase):
             token=self.hf_api_key,
             padding_side="right",
         )
+
+    @property
+    def model_name_or_path(self):
+        return self.model_or_name_or_path
 
     def generate(
         self,
