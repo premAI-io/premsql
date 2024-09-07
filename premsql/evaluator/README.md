@@ -112,10 +112,10 @@ We have also benchmarked several closed and open-source models. Here are some re
 
 **Accuracy**
 
-![accuracy comparison](/docs/assets/Model-Accuracy-Comparison.png)
+![accuracy comparison](/assets/Model-Accuracy-Comparison.png)
 
 **Valid Efficiency Score**
 
-![ves comparison](/docs/assets/Models-VES-Comparison.png)
+![ves comparison](/assets/Models-VES-Comparison.png)
 
 We have also made a detailed blog about this. If you are more interested in the analysis, you can check out the [blog post here](https://blog.premai.io/text2sql-eval).
