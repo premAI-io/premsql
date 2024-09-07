@@ -6,9 +6,8 @@ from typing import Optional, Union
 
 import numpy as np
 from func_timeout import FunctionTimedOut, func_timeout
+from premsql.utils import save_to_json
 from tqdm.auto import tqdm
-
-from premsql.datasets.utils import save_to_json
 
 
 class BaseExecutor(ABC):
@@ -111,7 +110,7 @@ class Text2SQLEvaluator:
             }
         except FunctionTimedOut as e:
             return {
-                metric_name: None,
+                metric_name: 0,
                 "error": f"Function Timed out: {e}",
             }
         except Exception as e:
@@ -119,7 +118,7 @@ class Text2SQLEvaluator:
                 traceback.print_exc()
 
             return {
-                metric_name: None,
+                metric_name: 0,
                 "error": f"Exception: {e}",
             }
 
@@ -129,7 +128,7 @@ class Text2SQLEvaluator:
         model_responses: list[dict],
         filter_by: Optional[str] = None,
         num_iterations: Optional[int] = 10,
-        meta_time_out: Optional[int] = 1000,
+        meta_time_out: Optional[int] = 10,  # change it later to 1000
         debug: Optional[bool] = False,
     ) -> dict:
         data_with_results = []
