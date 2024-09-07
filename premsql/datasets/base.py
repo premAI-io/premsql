@@ -7,17 +7,16 @@ from pathlib import Path
 from typing import Optional, Sequence, Union
 
 import torch
-from tqdm.auto import tqdm
-from transformers import AutoTokenizer
-
 from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
-from premsql.datasets.utils import (
+from premsql.utils import (
     filter_options,
     get_accepted_filters,
     get_random_few_shot_prompts,
     tokenize_fn,
 )
 from premsql.logger import setup_console_logger
+from tqdm.auto import tqdm
+from transformers import AutoTokenizer
 
 logger = setup_console_logger(name="[DATASET]")
 
@@ -211,7 +210,7 @@ class Text2SQLBaseDataset(ABC):
         self.dataset_path = Path(dataset_path)
         self.database_folder_name = database_folder_name
         self.dataset = json.load(open(self.dataset_path / json_file_name, "r"))
-        assert split in ["train", "validation"], ValueError(
+        assert split in ["train", "validation", "test"], ValueError(
             "Split should be either train or validation"
         )
         self.split = split

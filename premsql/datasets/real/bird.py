@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
-
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.logger import setup_console_logger
 
@@ -16,6 +15,7 @@ class BirdDataset(Text2SQLBaseDataset):
         dataset_folder: Optional[Union[str, Path]] = "./data",
         hf_token: Optional[str] = None,
         force_download: Optional[bool] = False,
+        **kwargs
     ):
         dataset_folder = Path(dataset_folder)
         bird_folder = dataset_folder / "bird"
@@ -31,10 +31,13 @@ class BirdDataset(Text2SQLBaseDataset):
             )
 
         dataset_path = bird_folder / split
-        database_folder_name = (
+
+        database_folder_name = kwargs.get("database_folder_name", None) or (
             "train_databases" if split == "train" else "dev_databases"
         )
-        json_file_name = "train.json" if split == "train" else "validation.json"
+        json_file_name = kwargs.get("json_file_name", None) or (
+            "train.json" if split == "train" else "validation.json"
+        )
 
         super().__init__(
             split=split,

@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
-
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.logger import setup_console_logger
 

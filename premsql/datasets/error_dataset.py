@@ -1,26 +1,27 @@
 import json
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Sequence
 
-from tqdm.auto import tqdm
-
-from premsql.datasets.base import SupervisedDatasetForTraining, Text2SQLBaseInstance
+from premsql.datasets.base import (
+    Text2SQLBaseDataset,
+    Text2SQLBaseInstance,
+    SupervisedDatasetForTraining,
+)
 from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
-from premsql.evaluator.base import Text2SQLEvaluatorBase
+from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
+from tqdm.auto import tqdm
 
 logger = setup_console_logger("[ERROR-HANDLING-DATASET]")
 
 
 class ErrorDatasetInstance(Text2SQLBaseInstance):
+
     def __init__(self, dataset: list[dict]) -> None:
         super().__init__(dataset=dataset)
 
-    def apply_prompt(
-        self,
-        prompt_template: Optional[str] = ERROR_HANDLING_PROMPT,
-    ):
+    def apply_prompt(self, prompt_template: Optional[str] = ERROR_HANDLING_PROMPT):
         data_to_return = []
         for content in tqdm(
             self.dataset, total=len(self.dataset), desc="Applying error prompt"
@@ -32,96 +33,102 @@ class ErrorDatasetInstance(Text2SQLBaseInstance):
             error_prompt = prompt_template.format(
                 existing_prompt=prompt, sql=prediction, error_msg=error_msg
             )
-            data_to_return.append({**content, "prompt": error_prompt})
+            data_to_return.append(
+                {
+                    "db_id": content["db_id"],
+                    "question": content["question"],
+                    "SQL": content["SQL"],
+                    "prompt": error_prompt,
+                    "db_path": content["db_path"],
+                }
+            )
         return data_to_return
 
 
-# TODO: Error dataset is not very much optimized
-# Since this is not using batching to make the computation first
-# We need to optimize this for more faster operations, since this is
-# been operated on training data level.
-class ErrorDataset:
-
+class ErrorDatasetGenerator:
     @classmethod
     def from_existing(
-        cls, eval_path: Union[str, Path], model_name_or_path: Optional[str] = None
-    ):
-        raise NotImplementedError
-
-    @classmethod
-    def from_generator(
         cls,
         experiment_name: str,
+        experiment_folder: Optional[str] = None,
+        tokenize_model_name_or_path: Optional[str] = None,
+        hf_token: Optional[str] = None,
+    ) -> dict:
+        experiment_folder = Path("./experiments") or Path(experiment_folder)
+        experiment_path = (
+            experiment_folder / "train" / experiment_name / "error_dataset.json"
+        )
+        if not experiment_path.exists():
+            raise FileNotFoundError(f"Path {experiment_path} does not exists")
+        dataset = json.load(open(experiment_path, "r"))
+        return (
+            ErrorDatasetInstance(dataset=dataset)
+            if not tokenize_model_name_or_path
+            else SupervisedDatasetForTraining(
+                dataset=dataset,
+                model_name_or_path=tokenize_model_name_or_path,
+                hf_token=hf_token,
+            )
+        )
+
+    def __init__(
+        self,
         generator: Text2SQLGeneratorBase,
-        ex_evaluator: Text2SQLEvaluatorBase,
-        tokenize: Optional[bool] = False,
-        **kwargs
+        executor: BaseExecutor,
     ):
-        dataset = json.load(
-            open(Path("./experiments") / "train" / experiment_name / "predict.json"),
-            "r",
+        self.generator = generator
+        self.evaluator = Text2SQLEvaluator(
+            executor=executor, experiment_path=self.generator.experiment_path
         )
-        error_based_reponses = []
 
-        for content in tqdm(
-            dataset, total=len(dataset), desc="Generating results and evaluating"
-        ):
-            prompt = content["prompt"]
-            input_ids = generator.tokenizer.encode(
-                text=prompt,
-                return_tensors="pt",
-                padding="longest",
-                max_length=generator.tokenizer.model_max_length,
-                truncation=True,
-            ).to(generator.device)
+    def generate_and_save(
+        self,
+        datasets: Sequence[Text2SQLBaseDataset],
+        path_to_save: Optional[str] = None,
+        force: Optional[bool] = False,
+        tokenize: Optional[bool] = False,
+        prompt_template: Optional[str] = ERROR_HANDLING_PROMPT,
+        hf_token: Optional[str] = None,
+    ) -> None:
 
-            output_tokens = (
-                generator.generate(
-                    input_ids=input_ids,
-                    do_sample=False,
-                    max_new_tokens=256,
-                    pad_token_id=generator.tokenizer.eos_token_id,
-                    **kwargs
-                )
-                .detach()
-                .tolist()[0]
-            )
-            output_tokens = (
-                output_tokens[len(input_ids[0]) :]
-                if len(output_tokens) > len(input_ids[0])
-                else output_tokens
-            )
-            generated = generator.postprocess(
-                generated.tokenizer.decode(output_tokens, skip_special_tokens=True)
-            )
-
-            # Now run this thing into the executor
-            result = ex_evaluator.execute_model(
-                predicted_sql=generated,
-                ground_truth_sql=content["SQL"],
-                dsn_or_db_path=content["db_path"],
-            )
-            error = result["error"]
-            if error:
-                error_based_reponses.append({**content, "error": error})
-
-        error_instance = ErrorDatasetInstance(dataset=error_based_reponses)
-        # Also save the results
         path_to_save = (
-            Path("./experiments") / "train" / experiment_name / "error_dataset.json"
+            (self.generator.experiment_path / "error_dataset.json")
+            if path_to_save is None
+            else Path(path_to_save)
+        )
+        if path_to_save.exists() and force == False:
+            logger.info("Error dataset already exists")
+            with open(path_to_save, "r") as json_file:
+                data_to_return = json.load(json_file)
+            return data_to_return
+
+        responses = self.generator.generate_and_save_results(
+            dataset=datasets, temperature=0.1, max_new_tokens=256, force=force
+        )
+        logger.info("Starting Evaluation")
+        _ = self.evaluator.execute(
+            metric_name="accuracy",
+            model_responses=responses,
+        )
+        del responses
+
+        # Now iterate over the error dataset
+        with open(self.generator.experiment_path / "predict.json", "r") as file:
+            error_dataset = json.load(file)
+
+        error_instances = ErrorDatasetInstance(dataset=error_dataset).apply_prompt(
+            prompt_template=prompt_template
         )
 
-        if not path_to_save.exists():
-            with open(path_to_save, "w") as json_file:
-                json.dump(error_instance, json_file)
-            logger.info("Saved Error dataset in {}".format(path_to_save))
+        with open(path_to_save, "w") as json_file:
+            json.dump(error_instances, json_file, indent=4)
 
         return (
-            error_instance
+            error_instances
             if not tokenize
             else SupervisedDatasetForTraining(
-                dataset=error_instance,
-                model_name_or_path=generator.model_name_or_path,
-                hf_token=kwargs.get("hf_token", None),
+                dataset=error_instances,
+                model_name_or_path=self.generator.model_name_or_path,
+                hf_token=hf_token,
             )
         )
