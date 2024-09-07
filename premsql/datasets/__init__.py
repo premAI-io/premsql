@@ -6,7 +6,7 @@ from premsql.datasets.real.bird import BirdDataset
 from premsql.datasets.real.domains import DomainsDataset
 from premsql.datasets.real.spider import SpiderUnifiedDataset
 from premsql.datasets.synthetic.gretel import GretelAIDataset
-from premsql.datasets.utils import get_accepted_filters
+from premsql.utils import get_accepted_filters
 
 
 class Text2SQLDataset:
@@ -17,6 +17,7 @@ class Text2SQLDataset:
         dataset_folder: Optional[Union[str, Path]] = "./data",
         hf_token: Optional[str] = None,
         force_download: Optional[bool] = False,
+        **kwargs
     ):
         assert dataset_name in ["bird", "domains", "spider", "gretel"], ValueError(
             "Dataset should be one of bird, domains, spider, gretel"
@@ -32,6 +33,7 @@ class Text2SQLDataset:
             dataset_folder=dataset_folder,
             hf_token=hf_token,
             force_download=force_download,
+            **kwargs
         )
 
     @property
