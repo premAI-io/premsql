@@ -2,14 +2,13 @@ import json
 import re
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional
 
 import sqlparse
-from tqdm.auto import tqdm
-
 from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
 from premsql.evaluator.base import BaseExecutor
 from premsql.logger import setup_console_logger
+from tqdm.auto import tqdm
 
 logger = setup_console_logger(name="[GENERATOR]")
 
@@ -43,6 +42,11 @@ class Text2SQLGeneratorBase(ABC):
     @abstractmethod
     def load_tokenizer(self):
         return NotImplementedError
+
+    @property
+    @abstractmethod
+    def model_name_or_path(self):
+        pass
 
     @abstractmethod
     def generate(
@@ -103,9 +107,10 @@ class Text2SQLGeneratorBase(ABC):
         if match:
             start_pos = match.start()
             sql_statement = output_string[start_pos:]
-            return sqlparse.format(sql_statement)
         else:
-            return sqlparse.format(output_string)
+            sql_statement = output_string
+
+        return sqlparse.format(sql_statement.split("# SQL:")[-1].strip())
 
     def load_results_from_folder(self):
         item_names = [item.name for item in self.experiment_path.iterdir()]
