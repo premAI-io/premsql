@@ -2,7 +2,6 @@ import os
 from typing import Optional
 
 from premai import Prem
-
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 
@@ -38,6 +37,10 @@ class Text2SQLGeneratorPremAI(Text2SQLGeneratorBase):
     @property
     def load_tokenizer(self) -> None:
         pass
+
+    @property
+    def model_name_or_path(self) -> str:
+        self.model_name_or_path
 
     def generate(
         self,
