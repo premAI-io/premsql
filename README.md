@@ -30,6 +30,7 @@ PremSQL is an open-source library designed to help developers create secure, ful
     - [Tuner](#tuner)
     - [Pipelines](#pipelines)
   - [🤝 Contributing](#-contributing)
+  - [🛣️ Roadmap](#️-roadmap)
   - [📝 License](#-license)
 
 ## 🛠️ Installation
@@ -238,10 +239,19 @@ We welcome contributions from the community! If you’d like to contribute to Pr
 
 For detailed guidelines, please check the [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## 🛣️ Roadmap
+
+PremSQL is continuously evolving, with exciting features planned for future releases:
+
+- **Synthesizer Component**: A tool to generate synthetic datasets from private data, enabling fully private text-to-SQL workflows and enhancing model fine-tuning capabilities.
+- **Agentic Pipelines with Function-Calling Features**: Advanced pipelines with graph plotting, natural language analysis, and other enhancements to provide a more versatile and powerful system.
+- **Training Better Small Language Models**: Ongoing training and optimization of small language models specifically tailored to PremSQL’s unique requirements, ensuring efficient and effective performance in text-to-SQL tasks.
+- **Optimization of Generators and Executors**: Improvements to enhance the robustness of existing components, including parallel processing to speed up generation and execution times.
+- **Standard Tests and Stability Improvements**: Introduction of comprehensive tests for greater stability of the library and the planned rollout of a simple user interface to improve the overall user experience.
+
+Stay tuned for these exciting updates! We encourage you to contribute and provide feedback to help us shape the future of PremSQL.
+
+
 ## 📝 License
 
 PremSQL is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
----
-
-Join us in revolutionizing the NL2SQL landscape with local-first, autonomous AI-powered data analysis! For more details, visit our [documentation](https://docs.premai.io/premsql/introduction) and check out our [GitHub repository](https://github.com/premAI-io/premsql).
