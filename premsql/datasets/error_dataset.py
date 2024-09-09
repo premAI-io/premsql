@@ -2,16 +2,17 @@ import json
 from pathlib import Path
 from typing import Optional, Sequence
 
+from tqdm.auto import tqdm
+
 from premsql.datasets.base import (
+    SupervisedDatasetForTraining,
     Text2SQLBaseDataset,
     Text2SQLBaseInstance,
-    SupervisedDatasetForTraining,
 )
-from premsql.prompts import ERROR_HANDLING_PROMPT
 from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from tqdm.auto import tqdm
+from premsql.prompts import ERROR_HANDLING_PROMPT
 
 logger = setup_console_logger("[ERROR-HANDLING-DATASET]")
 

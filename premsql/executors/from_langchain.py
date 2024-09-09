@@ -2,8 +2,9 @@ import time
 from typing import Union
 
 from langchain_community.utilities.sql_database import SQLDatabase
-from premsql.utils import convert_sqlite_path_to_dsn
+
 from premsql.executors.base import BaseExecutor
+from premsql.utils import convert_sqlite_path_to_dsn
 
 
 class ExecutorUsingLangChain(BaseExecutor):

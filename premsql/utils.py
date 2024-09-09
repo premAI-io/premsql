@@ -8,9 +8,10 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Optional, Sequence, Union
 
-from premsql.logger import setup_console_logger
 from tqdm.auto import tqdm
 from transformers import PreTrainedTokenizer
+
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[UTILS]")
 

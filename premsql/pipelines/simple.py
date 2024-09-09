@@ -4,11 +4,12 @@ from typing import Optional, Union
 import pandas as pd
 import sqlparse
 from premai import Prem
-from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
+from tabulate import tabulate
+
 from premsql.executors.from_langchain import ExecutorUsingLangChain, SQLDatabase
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from tabulate import tabulate
+from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
 
 logger = setup_console_logger("[SIMPLE-AGENT]")
 

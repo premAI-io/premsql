@@ -7,6 +7,10 @@ from pathlib import Path
 from typing import Optional, Sequence, Union
 
 import torch
+from tqdm.auto import tqdm
+from transformers import AutoTokenizer
+
+from premsql.logger import setup_console_logger
 from premsql.prompts import BASE_TEXT2SQL_PROMPT
 from premsql.utils import (
     filter_options,
@@ -14,9 +18,6 @@ from premsql.utils import (
     get_random_few_shot_prompts,
     tokenize_fn,
 )
-from premsql.logger import setup_console_logger
-from tqdm.auto import tqdm
-from transformers import AutoTokenizer
 
 logger = setup_console_logger(name="[DATASET]")
 

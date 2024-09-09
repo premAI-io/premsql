@@ -3,6 +3,7 @@ from typing import Optional, Union
 
 import torch
 import transformers
+
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 

@@ -1,15 +1,13 @@
 import math
 import traceback
-
 from pathlib import Path
 from typing import Optional, Union
 
 from func_timeout import FunctionTimedOut, func_timeout
-from premsql.utils import save_to_json
 from tqdm.auto import tqdm
 
 from premsql.executors.base import BaseExecutor
-
+from premsql.utils import save_to_json
 
 
 class Text2SQLEvaluator:

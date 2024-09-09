@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 from premai import Prem
+
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 

@@ -2,15 +2,16 @@ from pathlib import Path
 from typing import Optional, Union
 
 from datasets import load_dataset
+from tqdm.auto import tqdm
+
 from premsql.datasets.base import (
     SupervisedDatasetForTraining,
     Text2SQLBaseDataset,
     Text2SQLBaseInstance,
 )
+from premsql.logger import setup_console_logger
 from premsql.prompts import BASE_TEXT2SQL_PROMPT
 from premsql.utils import filter_options, save_to_json
-from premsql.logger import setup_console_logger
-from tqdm.auto import tqdm
 
 logger = setup_console_logger("[GRETELAI-DATASET]")
 

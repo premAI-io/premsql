@@ -1,10 +1,6 @@
 import os
 from typing import Optional
 
-from premsql.datasets.base import Text2SQLBaseDataset
-from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
-from premsql.generators.huggingface import Text2SQLGeneratorHF
-from premsql.logger import setup_console_logger
 from torch.utils.tensorboard import SummaryWriter
 from transformers import (
     Trainer,
@@ -13,6 +9,11 @@ from transformers import (
     TrainerState,
     TrainingArguments,
 )
+
+from premsql.datasets.base import Text2SQLBaseDataset
+from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
+from premsql.generators.huggingface import Text2SQLGeneratorHF
+from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[EVALUATION-CALLBACK]")
 

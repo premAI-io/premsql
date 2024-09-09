@@ -1,6 +1,7 @@
 from typing import Optional, Sequence
 
 import transformers
+
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.datasets.collator import DataCollatorForSupervisedDataset
 from premsql.evaluator.base import BaseExecutor
