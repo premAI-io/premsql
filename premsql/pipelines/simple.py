@@ -4,8 +4,8 @@ from typing import Optional, Union
 import pandas as pd
 import sqlparse
 from premai import Prem
-from premsql.datasets.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
-from premsql.evaluator.from_langchain import ExecutorUsingLangChain, SQLDatabase
+from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
+from premsql.executors.from_langchain import ExecutorUsingLangChain, SQLDatabase
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 from tabulate import tabulate
