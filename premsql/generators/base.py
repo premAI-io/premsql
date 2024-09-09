@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import sqlparse
-from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
+from premsql.prompts import ERROR_HANDLING_PROMPT
 from premsql.evaluator.base import BaseExecutor
 from premsql.logger import setup_console_logger
 from tqdm.auto import tqdm

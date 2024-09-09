@@ -20,7 +20,7 @@ class Text2SQLGeneratorPremAI(Text2SQLGeneratorBase):
         **kwargs
     ):
         self.project_id = project_id
-        self.premai_api_key = premai_api_key or os.environ.get("PREMAI_TOKEN")
+        self.premai_api_key = premai_api_key or os.environ.get("PREMAI_API_KEY")
         self._kwargs = kwargs
         self.model_name_or_path = model_name
 
