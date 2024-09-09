@@ -1,6 +1,7 @@
 data
 experiments
 output
+test.py
 
 # Python specific
 *.pyc
