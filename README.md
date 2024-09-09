@@ -15,6 +15,8 @@ PremSQL is an open-source library designed to help developers create secure, ful
 - **Fine-Tuning Support**: Fine-tune models with LoRA, QLoRA, or full fine-tuning strategies.
 - **End-to-End Pipelines**: Seamlessly integrate all components for autonomous data analysis.
 
+Last but not the least, all the features are extendible for your very own customization and private data. 
+
 ## 📚 Table of Contents
 
 - [PremSQL](#premsql)
