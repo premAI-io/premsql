@@ -7,7 +7,7 @@ from premsql.datasets.base import (
     Text2SQLBaseInstance,
     SupervisedDatasetForTraining,
 )
-from premsql.datasets.prompts import ERROR_HANDLING_PROMPT
+from premsql.prompts import ERROR_HANDLING_PROMPT
 from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
