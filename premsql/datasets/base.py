@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional, Sequence, Union
 
 import torch
-from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
+from premsql.prompts import BASE_TEXT2SQL_PROMPT
 from premsql.utils import (
     filter_options,
     get_accepted_filters,
