@@ -23,7 +23,7 @@ class Text2SQLGeneratorPremAI(Text2SQLGeneratorBase):
         self.project_id = project_id
         self.premai_api_key = premai_api_key or os.environ.get("PREMAI_API_KEY")
         self._kwargs = kwargs
-        self.model_name_or_path = model_name
+        self.model_name = model_name
 
         super().__init__(
             experiment_name=experiment_name,
@@ -41,7 +41,7 @@ class Text2SQLGeneratorPremAI(Text2SQLGeneratorBase):
 
     @property
     def model_name_or_path(self) -> str:
-        self.model_name_or_path
+        return self.model_name 
 
     def generate(
         self,
