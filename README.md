@@ -46,94 +46,69 @@ pip install premsql
 Here’s a quick example of how to use PremSQL to generate SQL queries from natural language inputs:
 
 ```python
-from premsql.pipelines.simple import SimpleText2SQLAgent
-from premsql.generators.huggingface import Text2SQLGeneratorHF
-from langchain_community.utilities.sql_database import SQLDatabase
-from premsql.utils import convert_sqlite_path_to_dsn
+from premsql.pipelines import SimpleText2SQLAgent
+from premsql.generators import Text2SQLGeneratorHF
+from premsql.executors import SQLiteExecutor
 
-dsn_or_db_path = convert_sqlite_path_to_dsn("/path/to/db.sqlite")
-db = SQLDatabase.from_uri(dsn_or_db_path)
+# Provide a SQLite file here or see documentation for more customization
+dsn_or_db_path = "./data/db/california_schools.sqlite"
 
-# Create the pipeline and connect to the DB
-pipeline = SimpleText2SQLAgent(
-    dsn_or_db_path=db,
+agent = SimpleText2SQLAgent(
+    dsn_or_db_path=dsn_or_db_path,
     generator=Text2SQLGeneratorHF(
         model_or_name_or_path="premai-io/prem-1B-SQL",
-        experiment_name="test_nli",
+        experiment_name="simple_pipeline",
         device="cuda:0",
         type="test"
     ),
 )
 
-# Ask a question
-response = pipeline.query(
-    question="Please list the phone numbers of the direct charter-funded schools that opened after 2000/1/1",
-)
+question = "please list the phone numbers of the direct charter-funded schools that are opened after 2000/1/1"
 
-print(response["table"])
+response = agent.query(question)
+response["table"]
+
 ```
 
 ## 📦 Components Overview
 
 ### Datasets
 
-PremSQL provides flexible interfaces for creating high-quality datasets tailored to Text-to-SQL tasks. These datasets include schema information, few-shot examples, and additional context to guide SQL generation.
+PremSQL provides a simple API to use various pre-processed datasets for Text-to-SQL tasks. Text-to-SQL is complex as it requires data dependencies on databases and tables. The premsql datasets help streamline this by providing easy access to datasets and enabling you to create your own datasets with private databases.
 
-**Example:**
+Currently, the following datasets are readily available:
+
+1. [BirdBench Dataset](https://huggingface.co/datasets/premai-io/birdbench)
+2. [Spider Unified Datasets](https://huggingface.co/datasets/premai-io/spider)
+3. [Domains Dataset](https://huggingface.co/datasets/premai-io/domains)
+4. [Gretel AI Dataset](https://huggingface.co/datasets/gretelai/synthetic_text_to_sql)
+
+
+**Example usage:**
 
 ```python
 from premsql.datasets import Text2SQLDataset
 
-# Load the BirdBench dataset
 bird_dataset = Text2SQLDataset(
-    dataset_name='bird', 
-    split="train", 
-    force_download=False,
-    dataset_folder="path/to/store/the/dataset"
+    dataset_name='bird', split="train", force_download=False,
+    dataset_folder="/path/to/your/data" # change this to the path where you want to store the dataset
 )
+
 ```
-
-### Executors and Evaluators
-
-Executors connect to databases and execute SQL, while evaluators assess the performance of your models against predefined metrics like Execution Accuracy (EX) and Valid Efficiency Score (VES).
-
-**Example:**
-
-```python
-from premsql.evaluator import Text2SQLEvaluator, SQLiteExecutor
-
-executor = SQLiteExecutor()
-evaluator = Text2SQLEvaluator(
-    executor=executor, 
-    experiment_path="path/to/experiment"
-)
-
-ex = evaluator.execute(
-    metric_name="accuracy", 
-    model_responses=responses, 
-    filter_by="difficulty"
-)
-
-print(f"Execution Accuracy is: {ex}")
-```
-
 ### Generators
 
-Generators are responsible for converting natural language prompts into executable SQL queries. They support multiple decoding methods, including execution-guided decoding for error correction.
+PremSQL generators are responsible for converting natural language questions into SQL queries. Think of these as modular inference APIs specific to text-to-SQL. You can integrate various third-party APIs, models, or custom pipelines.
 
 **Example:**
 
 ```python
-from premsql.generators.huggingface import Text2SQLGeneratorHF
+from premsql.generators import Text2SQLGeneratorHF
 from premsql.datasets import Text2SQLDataset
 
 # Define a dataset
-dataset = Text2SQLDataset(
-    dataset_name="bird",
-    split="test",
-    database_folder_name="test_databases",
-    json_file_name="test.json",
-    dataset_folder="/path/to/dataset/folder",
+dataset = bird_dataset = Text2SQLDataset(
+    dataset_name='bird', split="train", force_download=False,
+    dataset_folder="/path/to/dataset"
 ).setup_dataset(num_rows=10, num_fewshot=3)
 
 # Define a generator 
@@ -145,16 +120,107 @@ generator = Text2SQLGeneratorHF(
 )
 
 # Generate on the full dataset
-response = generator.generate_and_save(
-    dataset=dataset,
+responses = generator.generate_and_save_results(
+    dataset=bird_dataset,
     temperature=0.1,
     max_new_tokens=256
 )
+
+print(responses)
 ```
+Results are saved in the experiment_path as predict.json. 
+
+We also support execution guided decoding. This strategy executes the generated SQL against the DB and, if it fails, uses the error message for correction, repeating until it gets a valid result or the retries run out.
+
+![alt text](/assets/execution_guided_decoding.png)
+
+A quick glance on execution guided decoding:
+
+```python
+from premsql.executors import SQLiteExecutor
+
+executor = SQLiteExecutor()
+response = generator.generate_and_save_results(
+    dataset=bird_dataset,
+    temperature=0.1,
+    max_new_tokens=256,
+    force=True,
+    executor=executor,
+    max_retries=5 # this is optional (default is already set to 5)
+)
+```
+
+### Executors
+
+An executor executes the generated SQL queries against the database and fetches the results. It is a crucial component in the Text-to-SQL pipeline, as it ensures that the generated SQL queries are valid and return the expected results. PremSQL supports a native executor for SQLite databases and also supports [LangChain's SQLDatabase](https://python.langchain.com/v0.2/docs/integrations/tools/sql_database/)
+as an executor. 
+
+**Example usage**
+
+```python
+from premsql.executors import SQLiteExecutor
+
+# Instantiate the executor
+executor = SQLiteExecutor()
+
+# Set a sample dataset path 
+db_path = "./data/db/california_schools.sqlite"
+sql = 'SELECT movie_title FROM movies WHERE movie_release_year = 1945 ORDER BY movie_popularity DESC LIMIT 1'
+
+# execute the SQL
+result = executor.execute_sql(
+    sql=sql,
+    dsn_or_db_path=db_path
+)
+
+print(result)
+```
+
+This will show:
+
+```python
+{'result': [('Brief Encounter',)], 'error': None, 'execution_time': 0.03717160224914551}
+```
+
+
+### Evaluators
+
+Executors connect to databases and execute SQL, while evaluators assess the performance of your models against predefined metrics like Execution Accuracy (EX) and Valid Efficiency Score (VES).
+
+**Example Usage:**
+
+```python
+from premsql.executors import SQLiteExecutor
+from premsql.evaluator import Text2SQLEvaluator
+
+# Define the executor 
+executor = SQLiteExecutor()
+
+# Define the evaluator 
+evaluator = Text2SQLEvaluator(
+    executor=executor,
+    experiment_path=generator.experiment_path
+)
+
+# Now evaluate the models 
+results = evaluator.execute(
+    metric_name="accuracy",
+    model_responses=response,
+    filter_by="db_id",
+    meta_time_out=10
+)
+
+print(results)
+```
+
+Using the `filter_by` option to filter results by `db_id` allows you to see overall accuracy and its distribution across different databases. If a key like `difficulty` is available, it will show performance distribution over various difficulty levels. Filtering evaluations by available keys helps in analyzing and understanding model performance empirically. Below is a visualization of model performance across different databases based on the applied filters.
+
+![alt text](/assets/eval_result_filtered.png)
+
 
 ### Error Handling
 
-PremSQL provides error-handling prompts and datasets that improve the model’s ability to self-correct SQL queries during inference, ensuring high-quality, executable outputs.
+Error-handling prompts are crucial for refining model performance, especially in complex tasks like Text-to-SQL generation. The prompts help the model learn how to handle errors by providing additional context and guidance based on past mistakes. By training on these prompts, the model can self-correct during inference, improving the quality of its output.
 
 **Example Error Correction Prompt:**
 
@@ -172,30 +238,15 @@ Carefully review the original question and error message, then rewrite the SQL q
 
 ### Tuner
 
-Fine-tune your Text-to-SQL models with ease using PremSQL’s tuner module, which supports LoRA, QLoRA, and full fine-tuning strategies.
+`premsql tuner` is a module designed to fine-tune models specifically for text-to-SQL tasks. The module offers multiple ways of fine-tuning, providing flexibility based on the needs of your project. 
 
-**Example Fine-Tuning Workflow:**
+### Supported Fine-Tuning Methods
 
-```python
-from premsql.tuner import SQLTuner
-from premsql.datasets import Text2SQLDataset
+1. **Full Fine-Tuning**: Standard fine-tuning of the model with all its parameters.
+2. **PEFT using LoRA**: Parameter-Efficient Fine-Tuning with LoRA (Low-Rank Adaptation) for faster and efficient training.
+3. **PEFT using QLoRA**: Another PEFT approach using Quantized LoRA, optimizing resource use during training.
 
-# Load the dataset
-dataset = Text2SQLDataset(
-    dataset_name='bird', 
-    split="train"
-)
-
-# Initialize the tuner
-tuner = SQLTuner(
-    model_name="premai-io/prem-1B-SQL",
-    dataset=dataset,
-    output_dir="./finetuned_model"
-)
-
-# Start fine-tuning
-tuner.fine_tune()
-```
+In addition to these methods, you can create custom fine-tuning pipelines using the components and tools provided by premsql.
 
 ### Pipelines
 
@@ -207,11 +258,15 @@ PremSQL pipelines are end-to-end solutions that connect to your database and gen
 from premsql.pipelines.simple import SimpleText2SQLAgent
 from premsql.generators.huggingface import Text2SQLGeneratorHF
 from langchain_community.utilities.sql_database import SQLDatabase
+from premsql.utils import convert_sqlite_path_to_dsn
 
-dsn_or_db_path = convert_sqlite_path_to_dsn("/path/to/db.sqlite")
+# Change it some SQLite database path or any other DB URI connection.
+dsn_or_db_path = convert_sqlite_path_to_dsn(
+  "../data/bird/test/test_databases/california_schools/california_schools.sqlite"   
+)
 db = SQLDatabase.from_uri(dsn_or_db_path)
 
-pipeline = SimpleText2SQLAgent(
+agent = SimpleText2SQLAgent(
     dsn_or_db_path=db,
     generator=Text2SQLGeneratorHF(
         model_or_name_or_path="premai-io/prem-1B-SQL",
@@ -221,11 +276,12 @@ pipeline = SimpleText2SQLAgent(
     ),
 )
 
-response = pipeline.query(
-    question="List the phone numbers of the charter-funded schools opened after 2000/1/1",
+response = agent.query(
+    question="please list the phone numbers of the direct charter-funded schools that are opened after 2000/1/1",
 )
 
-print(response["table"])
+response["table"]
+
 ```
 
 ## 🤝 Contributing
