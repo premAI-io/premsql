@@ -5,7 +5,7 @@ from premsql.datasets import (
     GretelAIDataset,
 )
 
-from premsql.evaluator.from_sqlite import SQLiteExecutor
+from premsql.executors.from_sqlite import SQLiteExecutor
 from premsql.datasets import Text2SQLDataset
 from premsql.tuner.peft import Text2SQLPeftTuner
 from premsql.datasets.error_dataset import ErrorDatasetGenerator
