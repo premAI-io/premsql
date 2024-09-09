@@ -7,7 +7,7 @@ from premsql.datasets.base import (
     Text2SQLBaseDataset,
     Text2SQLBaseInstance,
 )
-from premsql.datasets.prompts import BASE_TEXT2SQL_PROMPT
+from premsql.prompts import BASE_TEXT2SQL_PROMPT
 from premsql.utils import filter_options, save_to_json
 from premsql.logger import setup_console_logger
 from tqdm.auto import tqdm
