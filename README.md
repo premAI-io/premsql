@@ -26,7 +26,8 @@ Last but not the least, all the features are extendible for your very own custom
   - [🚀 Quickstart](#-quickstart)
   - [📦 Components Overview](#-components-overview)
     - [Datasets](#datasets)
-    - [Executors and Evaluators](#executors-and-evaluators)
+    - [Executors](#executors)
+    - [Evaluators](#evaluators)
     - [Generators](#generators)
     - [Error Handling](#error-handling)
     - [Tuner](#tuner)
@@ -74,7 +75,7 @@ response["table"]
 
 ## 📦 Components Overview
 
-### Datasets
+### [Datasets](https://docs.premai.io/premsql/introduction)
 
 PremSQL provides a simple API to use various pre-processed datasets for Text-to-SQL tasks. Text-to-SQL is complex as it requires data dependencies on databases and tables. The premsql datasets help streamline this by providing easy access to datasets and enabling you to create your own datasets with private databases.
 
@@ -152,7 +153,7 @@ response = generator.generate_and_save_results(
 )
 ```
 
-### Executors
+### [Executors](https://docs.premai.io/premsql/executors)
 
 An executor executes the generated SQL queries against the database and fetches the results. It is a crucial component in the Text-to-SQL pipeline, as it ensures that the generated SQL queries are valid and return the expected results. PremSQL supports a native executor for SQLite databases and also supports [LangChain's SQLDatabase](https://python.langchain.com/v0.2/docs/integrations/tools/sql_database/)
 as an executor. 
@@ -185,7 +186,7 @@ This will show:
 ```
 
 
-### Evaluators
+### [Evaluators](https://docs.premai.io/premsql/evaluators)
 
 Executors connect to databases and execute SQL, while evaluators assess the performance of your models against predefined metrics like Execution Accuracy (EX) and Valid Efficiency Score (VES).
 
@@ -220,7 +221,7 @@ Using the `filter_by` option to filter results by `db_id` allows you to see over
 ![alt text](/assets/eval_result_filtered.png)
 
 
-### Error Handling
+### [Error Handling](https://docs.premai.io/premsql/error_dataset)
 
 Error-handling prompts are crucial for refining model performance, especially in complex tasks like Text-to-SQL generation. The prompts help the model learn how to handle errors by providing additional context and guidance based on past mistakes. By training on these prompts, the model can self-correct during inference, improving the quality of its output.
 
@@ -277,19 +278,19 @@ error_dataset = error_dataset_gen.generate_and_save(
 ```
 
 
-### Tuner
+### [Tuner](https://docs.premai.io/premsql/tuner)
 
-`premsql tuner` is a module designed to fine-tune models specifically for text-to-SQL tasks. The module offers multiple ways of fine-tuning, providing flexibility based on the needs of your project. 
+`premsql tuner` is a module designed to fine-tune models specifically for text-to-SQL tasks. The module offers multiple ways of fine-tuning, providing flexibility based on your project's needs. 
 
 ### Supported Fine-Tuning Methods
 
-1. **Full Fine-Tuning**: Standard fine-tuning of the model with all its parameters.
-2. **PEFT using LoRA**: Parameter-Efficient Fine-Tuning with LoRA (Low-Rank Adaptation) for faster and efficient training.
+1. **Full Fine-Tuning**: Standard model fine-tuning with all its parameters.
+2. **PEFT using LoRA**: Parameter-efficient-fine-tuning with LoRA (Low-Rank Adaptation) for faster and more efficient training.
 3. **PEFT using QLoRA**: Another PEFT approach using Quantized LoRA, optimizing resource use during training.
 
 In addition to these methods, you can create custom fine-tuning pipelines using the components and tools provided by premsql.
 
-### Pipelines
+### [Pipelines](https://docs.premai.io/premsql/pipelines)
 
 PremSQL pipelines are end-to-end solutions that connect to your database and generate SQL queries from natural language questions, providing complete control over your data analysis workflows.
 
