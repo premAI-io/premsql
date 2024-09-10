@@ -5,6 +5,12 @@ PremSQL is an open-source library designed to help developers create secure, ful
 
 ![alt architecture](/assets/architecture.png)
 
+## News
+
+- [Sep 10th 2024] First release of PremSQL
+- [Sep 10th 2024] First release of [Prem-1B-SQL](https://huggingface.co/premai-io/prem-1B-SQL) (fully local Text to SQL model)
+
+
 ## 🚀 Features
 
 - **Local-First**: Avoid third-party closed-source providers and keep your data secure.
@@ -16,11 +22,6 @@ PremSQL is an open-source library designed to help developers create secure, ful
 - **End-to-End Pipelines**: Seamlessly integrate all components for autonomous data analysis.
 
 Last but not the least, all the features are extendible for your very own customization and private data. 
-
-## News
-
-- [Sep 10th 2024] First release of PremSQL
-- [Sep 10th 2024] First release of [Prem-1B-SQL](https://huggingface.co/premai-io/prem-1B-SQL) (fully local Text to SQL model)
 
 ## 📚 Table of Contents
 
