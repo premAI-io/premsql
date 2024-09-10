@@ -238,6 +238,45 @@ Error-handling prompts are crucial for refining model performance, especially in
 Carefully review the original question and error message, then rewrite the SQL query to address the identified issues.
 ```
 
+To create a self-correction / error-correction dataset:
+
+- You start with an existing training dataset
+- You run an evaluation on that training dataset using an un-trained model.
+- You gather the data and pass it to the error-handling prompt 
+- Finally, you save the results ready to be used for fine-tuning. 
+
+Here is the code to get started to make a self-correction dataset using existing datasets:
+
+```python
+from premsql.datasets.error_dataset import ErrorDatasetGenerator
+from premsql.generators.huggingface import Text2SQLGeneratorHF
+from premsql.executors.from_langchain import ExecutorUsingLangChain
+from premsql.datasets import BirdDataset
+
+generator = Text2SQLGeneratorHF(
+    model_or_name_or_path="premai-io/prem-1B-SQL",
+    experiment_name="testing_error_gen",
+    type="train", # do not type: 'test' since this will be used during training
+    device="cuda:0"
+)
+
+executor = ExecutorUsingLangChain()
+
+bird_train = BirdDataset(
+    split="train",
+    dataset_folder="/path/to/dataset"
+).setup_dataset(num_rows=10)
+
+error_dataset_gen = ErrorDatasetGenerator(generator=generator, executor=executor)
+
+error_dataset = error_dataset_gen.generate_and_save(
+    datasets=bird_train,
+    force=True
+)
+
+```
+
+
 ### Tuner
 
 `premsql tuner` is a module designed to fine-tune models specifically for text-to-SQL tasks. The module offers multiple ways of fine-tuning, providing flexibility based on the needs of your project. 
