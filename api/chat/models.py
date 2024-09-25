@@ -32,6 +32,7 @@ class ChatMessage(models.Model):
     sql = models.TextField(null=True, blank=True)
 
     llm = models.CharField(max_length=255, null=True, blank=True)
+    table = models.JSONField(null=True, blank=True)
     temperature = models.FloatField(null=True, blank=True)
     max_new_tokens = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
