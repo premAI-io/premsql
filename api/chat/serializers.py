@@ -59,6 +59,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "tables_to_include",
             "tables_to_exclude",
             "sql",
+            "table",  # Ensure 'table' is listed here
         ]
         read_only_fields = ["id", "response", "sql", "created_at", "table"]
 
