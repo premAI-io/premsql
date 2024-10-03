@@ -61,7 +61,7 @@ from premsql.generators import Text2SQLGeneratorHF
 from premsql.executors import SQLiteExecutor
 
 # Provide a SQLite file here or see documentation for more customization
-dsn_or_db_path = "./data/db/california_schools.sqlite"
+dsn_or_db_path = "sqlite:///data/db/california_schools.sqlite"
 
 agent = SimpleText2SQLAgent(
     dsn_or_db_path=dsn_or_db_path,
