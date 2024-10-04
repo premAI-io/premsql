@@ -60,7 +60,14 @@ from premsql.pipelines import SimpleText2SQLAgent
 from premsql.generators import Text2SQLGeneratorHF
 from premsql.executors import SQLiteExecutor
 
-# Provide a SQLite file here or see documentation for more customization
+# Provide a SQLite file here.
+# You may also pass in a SQLDatabase object directly:
+
+# from langchain_community.utilities.sql_database import SQLDatabase
+# dsn_or_db_path = SQLDatabase.from_uri("sqlite:///data/db/california_schools.sqlite")
+
+# See documentation for more customization
+
 dsn_or_db_path = "sqlite:///data/db/california_schools.sqlite"
 
 agent = SimpleText2SQLAgent(
