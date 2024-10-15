@@ -1,47 +1,54 @@
 from textwrap import dedent
 from typing import Optional, Union
 
-import pandas as pd
 import sqlparse
-from premai import Prem
-from tabulate import tabulate
 
-from premsql.executors.from_langchain import ExecutorUsingLangChain, SQLDatabase
+from premsql.executors.from_langchain import SQLDatabase, ExecutorUsingLangChain
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
+from premsql.pipelines.common import execute_and_render_result
+
 
 logger = setup_console_logger("[SIMPLE-AGENT]")
 
-
 class SimpleText2SQLAgent:
     def __init__(
-        self,
-        dsn_or_db_path: Union[str, SQLDatabase],
+        self, 
+        dsn_or_db_path: Union[str, SQLDatabase], 
         generator: Text2SQLGeneratorBase,
-        premai_project_id: Optional[str] = None,
-        premai_api_key: Optional[str] = None,
-    ):
-        self.db = (
-            SQLDatabase.from_uri(dsn_or_db_path, sample_rows_in_table_info=0)
-            if isinstance(dsn_or_db_path, str)
-            else dsn_or_db_path
-        )
-        self.dsn_or_db_path = dsn_or_db_path
+        corrector: Optional[Text2SQLGeneratorBase]=None,
+        executor: Optional[ExecutorUsingLangChain]=None,
+        include_tables: Optional[list] = None,
+        exclude_tables: Optional[list] = None,
+    ) -> None:
+        if include_tables is not None and exclude_tables is not None:
+            raise ValueError("Either include_tables or exclude_tables can be provided, not both")
+
+        self.db = self._initialize_database(dsn_or_db_path, include_tables, exclude_tables)
         self.generator = generator
-        self.executor = ExecutorUsingLangChain()
-        self.project_id = premai_project_id
+        self.corrector = corrector
+        self.executor = executor if executor is not None else ExecutorUsingLangChain()
+        self.dsn_or_db_path = dsn_or_db_path
 
-        self.corrector = (
-            Prem(api_key=premai_api_key)
-            if premai_project_id and premai_api_key
-            else None
-        )
-        logger.info("Everything set")
+        logger.info("SimpleText2SQLAgent is set")
 
-        if self.corrector:
-            logger.info("Using gpt-4o as the final corrector")
-
+    def _initialize_database(
+        self, dsn_or_db_path: str, include_tables: Optional[list]=None, exclude_tables: Optional[list]=None
+    ):
+        try:
+            if isinstance(dsn_or_db_path, str):
+                return SQLDatabase.from_uri(
+                    dsn_or_db_path, 
+                    sample_rows_in_table_info=0,
+                    ignore_tables=exclude_tables,
+                    include_tables=include_tables
+                )
+        except Exception as e:
+            logger.error(f"Error loading the database: {e}")
+            raise RuntimeError(f"Error loading the database: {e}")
+    
+    
     def _create_prompt(
         self,
         question: str,
@@ -71,7 +78,7 @@ class SimpleText2SQLAgent:
             question=question,
         )
         return prompt
-
+    
     def query(
         self,
         question: str,
@@ -98,54 +105,44 @@ class SimpleText2SQLAgent:
             postprocess=True,
             **kwargs
         )
-        result = self.render_result(sql=generated_sql, using=render_results_using)
-
-        if result["error"] is not None:
+        result = execute_and_render_result(
+            db=self.db,
+            sql=generated_sql,
+            using=render_results_using
+        )
+        
+        # This means an error has occured
+        if  result["error"] is not None:
             logger.info("=> Going for final correction ...")
-            return self.correct_with_gpt(
-                question=question, result=result, render_using=render_results_using
+            generated_sql = self.do_correction(
+                question=question,
+                result=result,
             )
-        return result
+            result = execute_and_render_result(
+            db=self.db,
+            sql=generated_sql,
+            using=render_results_using
+        )
 
-    def render_result(self, sql, using="tabulate"):
-        result = self.db.run_no_throw(command=sql, fetch="cursor")
-
-        # This assumes that an error happens
-        if isinstance(result, str):
-            to_show = {
-                "table": pd.DataFrame(data=[{"error": result}]),
-                "error": result,
-                "sql": sql,
-            }
-
-        else:
-            table = pd.DataFrame(data=result.fetchall(), columns=result.keys())
-            to_show = {"table": table, "error": None, "sql": sql}
-
-        if using == "tabulate":
-            to_show["table"] = tabulate(
-                to_show["table"], headers="keys", tablefmt="psql", showindex=False
-            )
-
-        return to_show
-
-    def correct_with_gpt(self, question, result: dict, render_using: str):
+        return {
+            "bot_message": "Here are your fetch results",
+            "sql": result["sql"],
+            "table": result["table"],
+            "plot": None,
+            "error": result.get("error", None)
+        }
+            
+    def do_correction(self, question: str, result: dict, **kwargs):
         if self.corrector:
             error_prompt = ERROR_HANDLING_PROMPT.format(
                 existing_prompt=self._create_prompt(question=question),
                 error_msg=result["error"],
-                sql=result["sql"],
+                sql=result["sql"]
             )
             corrected_sql = sqlparse.format(
-                self.corrector.chat.completions.create(
-                    project_id=self.project_id,
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": error_prompt}],
+                self.corrector.generate(
+                    data_blob={"prompt": error_prompt},
+                    **kwargs  
                 )
-                .choices[0]
-                .message.content.split("# SQL:")[-1]
-                .strip()
             )
-
-            return self.render_result(sql=corrected_sql, using=render_using)
-        return result
+            return corrected_sql
