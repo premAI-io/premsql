@@ -31,8 +31,8 @@ if manager.is_running(8500):
 # print(response)
 
 
-from openai import OpenAI
 import streamlit as st
+from openai import OpenAI
 
 st.title("ChatGPT-like clone")
 

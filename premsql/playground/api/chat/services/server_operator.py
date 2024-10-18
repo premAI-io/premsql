@@ -1,15 +1,17 @@
-import os 
-import time
+import os
 import signal
 import subprocess
+import time
 from typing import Optional
+
 from chat.constants import INFERENCE_SERVER_PORT, INFERENCE_SERVER_URL
+
 
 class ServerManager:
     def __init__(self) -> None:
         self.process = None
         self.config = {}
-    
+
     def start(
         self,
         dsn_or_db_path: str,
@@ -17,21 +19,25 @@ class ServerManager:
         config_path: Optional[str] = None,
         env_path: Optional[str] = None,
         include_tables: Optional[str] = None,
-        exclude_tables: Optional[str] = None, 
+        exclude_tables: Optional[str] = None,
         host: str = INFERENCE_SERVER_URL,
-        port: int = INFERENCE_SERVER_PORT
+        port: int = INFERENCE_SERVER_PORT,
     ):
         if self.process:
             print("Server is already running. Stop it first.")
             return
-        
+
         command = [
             "python3",
             "premsql/playground/inference_server/main.py",
-            "--dsn_or_db_path", dsn_or_db_path,
-            "--agent_name", agent_name,
-            "--host", host,
-            "--port", str(port)
+            "--dsn_or_db_path",
+            dsn_or_db_path,
+            "--agent_name",
+            agent_name,
+            "--host",
+            host,
+            "--port",
+            str(port),
         ]
 
         if config_path:
@@ -42,7 +48,7 @@ class ServerManager:
             command.extend(["--include_tables", include_tables])
         if exclude_tables:
             command.extend(["--exclude_tables", exclude_tables])
-        
+
         self.config = {
             "dsn_or_db_path": dsn_or_db_path,
             "agent_name": agent_name,
@@ -51,7 +57,7 @@ class ServerManager:
             "include_tables": include_tables,
             "exclude_tables": exclude_tables,
             "host": host,
-            "port": port
+            "port": port,
         }
 
         print(f"Starting server with command: {' '.join(command)}")
@@ -66,11 +72,13 @@ class ServerManager:
         if port is None and not self.process:
             print("No server is running")
             return
-        
+
         if port:
             try:
                 # Use lsof to find the process using the specified port
-                result = subprocess.run(['lsof', '-ti', f':{port}'], capture_output=True, text=True)
+                result = subprocess.run(
+                    ["lsof", "-ti", f":{port}"], capture_output=True, text=True
+                )
                 if result.returncode == 0:
                     pid = int(result.stdout.strip())
                     os.kill(pid, signal.SIGTERM)
@@ -84,7 +92,7 @@ class ServerManager:
             self.process.wait()
             print(f"Server with PID {self.process.pid} stopped.")
             self.process = None
-    
+
     def restart(self):
         self.stop()
         self.start(**self.config)
@@ -92,10 +100,11 @@ class ServerManager:
     def is_running(self, port: Optional[int] = None):
         if port is not None:
             try:
-                result = subprocess.run(['lsof', '-ti', f':{port}'], capture_output=True, text=True)
+                result = subprocess.run(
+                    ["lsof", "-ti", f":{port}"], capture_output=True, text=True
+                )
                 return result.returncode == 0
             except subprocess.CalledProcessError:
                 return False
         else:
             return self.process is not None and self.process.poll() is None
-    

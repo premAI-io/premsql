@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-# Sessions 
+
+# Sessions
 class SessionCreationRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField(max_length=255)
     agent_name = serializers.CharField(max_length=255, default="simple_agent")
@@ -8,11 +9,16 @@ class SessionCreationRequestSerializer(serializers.Serializer):
     db_type = serializers.CharField(max_length=255, default="sqlite")
     db_connection_uri = serializers.CharField(max_length=255)
 
-    include = serializers.CharField(default="", allow_null=True, allow_blank=True, min_length=0)
-    exclude = serializers.CharField(default="", allow_null=True, allow_blank=True, min_length=0)
+    include = serializers.CharField(
+        default="", allow_null=True, allow_blank=True, min_length=0
+    )
+    exclude = serializers.CharField(
+        default="", allow_null=True, allow_blank=True, min_length=0
+    )
 
     config_path = serializers.CharField(allow_null=True, allow_blank=True, default="")
     env_path = serializers.CharField(allow_null=True, allow_blank=True, default="")
+
 
 class SessionCreationResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=["success", "error"])
@@ -22,8 +28,10 @@ class SessionCreationResponseSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 class SessionDeletionRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField()
+
 
 class SessionDeletionResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=["success", "error"])
@@ -33,20 +41,24 @@ class SessionDeletionResponseSerializer(serializers.Serializer):
     deleted_at = serializers.DateTimeField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 class SessionUpdateRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField(max_length=255)
-    agent_name = serializers.CharField(
-        max_length=255, default="simple_agent"
-    )
+    agent_name = serializers.CharField(max_length=255, default="simple_agent")
 
     db_type = serializers.CharField(max_length=255, default="sqlite")
     db_connection_uri = serializers.CharField(max_length=255)
 
-    include = serializers.CharField(default="", allow_null=True, allow_blank=True, min_length=0)
-    exclude = serializers.CharField(default="", allow_null=True, allow_blank=True, min_length=0)
+    include = serializers.CharField(
+        default="", allow_null=True, allow_blank=True, min_length=0
+    )
+    exclude = serializers.CharField(
+        default="", allow_null=True, allow_blank=True, min_length=0
+    )
 
     config_path = serializers.CharField(allow_null=True, allow_blank=True)
     env_path = serializers.CharField(allow_null=True, allow_blank=True)
+
 
 class SessionUpdateResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=["success", "error"])
@@ -56,12 +68,14 @@ class SessionUpdateResponseSerializer(serializers.Serializer):
     updated_at = serializers.DateTimeField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 class SessionSummarySerializer(serializers.Serializer):
     session_id = serializers.IntegerField()
     session_name = serializers.CharField(max_length=255)
     created_at = serializers.DateTimeField()
     engine = serializers.CharField(max_length=255)
     db_type = serializers.CharField(max_length=255)
+
 
 class SessionListResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=["success", "error"])
@@ -72,7 +86,6 @@ class SessionListResponseSerializer(serializers.Serializer):
     page = serializers.IntegerField(allow_null=True)
     page_size = serializers.IntegerField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
-
 
 
 # Chats
@@ -99,24 +112,26 @@ class ChatMessageCreationResponseSerializer(serializers.Serializer):
     plot_dataframe = serializers.JSONField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 class ChatMessageSummarySerializer(serializers.Serializer):
     message_id = serializers.IntegerField()
     session_name = serializers.CharField()
     created_at = serializers.DateTimeField()
     query = serializers.CharField()
-    sql_string = serializers.CharField()
-    has_plot = serializers.BooleanField()
-    has_dataframe = serializers.BooleanField()
-    has_plot_dataframe = serializers.BooleanField()
+    bot_message = serializers.CharField(allow_null=True)
+    sql_string = serializers.CharField(allow_null=True)
+    dataframe = serializers.JSONField(allow_null=True)
+    plot_image = serializers.CharField(allow_null=True)
+    plot_dataframe = serializers.JSONField(allow_null=True)
+
 
 class ChatMessageListResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=["success", "error"])
-    message = serializers.CharField()
+    status_code = serializers.ChoiceField(choices=[200, 500])
     data = ChatMessageSummarySerializer(many=True, allow_null=True)
     total_count = serializers.IntegerField(allow_null=True)
-    page = serializers.IntegerField(allow_null=True)
-    page_size = serializers.IntegerField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
+
 
 class ChatMessageListRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField(allow_null=True)

@@ -3,28 +3,33 @@ from typing import Optional, Union
 
 import sqlparse
 
-from premsql.executors.from_langchain import SQLDatabase, ExecutorUsingLangChain
+from premsql.executors.from_langchain import ExecutorUsingLangChain, SQLDatabase
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
 from premsql.pipelines.common import execute_and_render_result
+from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
 
 logger = setup_console_logger("[SIMPLE-AGENT]")
 
+
 class SimpleText2SQLAgent:
     def __init__(
-        self, 
-        dsn_or_db_path: Union[str, SQLDatabase], 
+        self,
+        dsn_or_db_path: Union[str, SQLDatabase],
         generator: Text2SQLGeneratorBase,
-        corrector: Optional[Text2SQLGeneratorBase]=None,
-        executor: Optional[ExecutorUsingLangChain]=None,
+        corrector: Optional[Text2SQLGeneratorBase] = None,
+        executor: Optional[ExecutorUsingLangChain] = None,
         include_tables: Optional[str] = None,
         exclude_tables: Optional[str] = None,
     ) -> None:
         if include_tables is not None and exclude_tables is not None:
-            raise ValueError("Either include_tables or exclude_tables can be provided, not both")
+            raise ValueError(
+                "Either include_tables or exclude_tables can be provided, not both"
+            )
 
-        self.db = self._initialize_database(dsn_or_db_path, include_tables, exclude_tables)
+        self.db = self._initialize_database(
+            dsn_or_db_path, include_tables, exclude_tables
+        )
         self.generator = generator
         self.corrector = corrector
         self.executor = executor if executor is not None else ExecutorUsingLangChain()
@@ -33,32 +38,38 @@ class SimpleText2SQLAgent:
         logger.info("SimpleText2SQLAgent is set")
 
     def _initialize_database(
-        self, dsn_or_db_path: str, include_tables: Optional[str]=None, exclude_tables: Optional[str]=None
+        self,
+        dsn_or_db_path: str,
+        include_tables: Optional[str] = None,
+        exclude_tables: Optional[str] = None,
     ):
         include_tables_list = None
         exclude_tables_list = None
 
         if include_tables:
-            include_tables_list = [table.strip() for table in include_tables.split(',') if table.strip()]
+            include_tables_list = [
+                table.strip() for table in include_tables.split(",") if table.strip()
+            ]
             logger.info(f"Including tables: {include_tables_list}")
 
         if exclude_tables:
-            exclude_tables_list = [table.strip() for table in exclude_tables.split(',') if table.strip()]
+            exclude_tables_list = [
+                table.strip() for table in exclude_tables.split(",") if table.strip()
+            ]
             logger.info(f"Excluding tables: {exclude_tables_list}")
 
         try:
             if isinstance(dsn_or_db_path, str):
                 return SQLDatabase.from_uri(
-                    dsn_or_db_path, 
+                    dsn_or_db_path,
                     sample_rows_in_table_info=0,
                     ignore_tables=exclude_tables_list,
-                    include_tables=include_tables_list
+                    include_tables=include_tables_list,
                 )
         except Exception as e:
             logger.error(f"Error loading the database: {e}")
             raise RuntimeError(f"Error loading the database: {e}")
-    
-    
+
     def _create_prompt(
         self,
         question: str,
@@ -88,7 +99,7 @@ class SimpleText2SQLAgent:
             question=question,
         )
         return prompt
-    
+
     def query(
         self,
         question: str,
@@ -98,7 +109,7 @@ class SimpleText2SQLAgent:
         temperature: Optional[float] = 0.1,
         max_new_tokens: Optional[int] = 256,
         render_results_using: Optional[str] = "dataframe",
-        **kwargs
+        **kwargs,
     ):
         prompt = self._create_prompt(
             question=question,
@@ -113,26 +124,22 @@ class SimpleText2SQLAgent:
             max_new_tokens=max_new_tokens,
             max_retries=5,
             postprocess=True,
-            **kwargs
+            **kwargs,
         )
         result = execute_and_render_result(
-            db=self.db,
-            sql=generated_sql,
-            using=render_results_using
+            db=self.db, sql=generated_sql, using=render_results_using
         )
-        
+
         # This means an error has occured
-        if  result["error"] is not None:
+        if result["error"] is not None:
             logger.info("=> Going for final correction ...")
             generated_sql = self.do_correction(
                 question=question,
                 result=result,
             )
             result = execute_and_render_result(
-            db=self.db,
-            sql=generated_sql,
-            using=render_results_using
-        )
+                db=self.db, sql=generated_sql, using=render_results_using
+            )
 
         # TODO: There should be an unified standardization maintained
         # Which should match with the serializers key
@@ -141,20 +148,17 @@ class SimpleText2SQLAgent:
             "sql": result["sql"],
             "table": result["table"],
             "plot": None,
-            "error": result.get("error", None)
+            "error": result.get("error", None),
         }
-            
+
     def do_correction(self, question: str, result: dict, **kwargs):
         if self.corrector:
             error_prompt = ERROR_HANDLING_PROMPT.format(
                 existing_prompt=self._create_prompt(question=question),
                 error_msg=result["error"],
-                sql=result["sql"]
+                sql=result["sql"],
             )
             corrected_sql = sqlparse.format(
-                self.corrector.generate(
-                    data_blob={"prompt": error_prompt},
-                    **kwargs  
-                )
+                self.corrector.generate(data_blob={"prompt": error_prompt}, **kwargs)
             )
             return corrected_sql
