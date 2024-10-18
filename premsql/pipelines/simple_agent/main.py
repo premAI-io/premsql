@@ -9,7 +9,6 @@ from premsql.logger import setup_console_logger
 from premsql.prompts import ERROR_HANDLING_PROMPT, OLD_BASE_TEXT2SQL_PROMPT
 from premsql.pipelines.common import execute_and_render_result
 
-
 logger = setup_console_logger("[SIMPLE-AGENT]")
 
 class SimpleText2SQLAgent:
@@ -19,8 +18,8 @@ class SimpleText2SQLAgent:
         generator: Text2SQLGeneratorBase,
         corrector: Optional[Text2SQLGeneratorBase]=None,
         executor: Optional[ExecutorUsingLangChain]=None,
-        include_tables: Optional[list] = None,
-        exclude_tables: Optional[list] = None,
+        include_tables: Optional[str] = None,
+        exclude_tables: Optional[str] = None,
     ) -> None:
         if include_tables is not None and exclude_tables is not None:
             raise ValueError("Either include_tables or exclude_tables can be provided, not both")
@@ -34,15 +33,26 @@ class SimpleText2SQLAgent:
         logger.info("SimpleText2SQLAgent is set")
 
     def _initialize_database(
-        self, dsn_or_db_path: str, include_tables: Optional[list]=None, exclude_tables: Optional[list]=None
+        self, dsn_or_db_path: str, include_tables: Optional[str]=None, exclude_tables: Optional[str]=None
     ):
+        include_tables_list = None
+        exclude_tables_list = None
+
+        if include_tables:
+            include_tables_list = [table.strip() for table in include_tables.split(',') if table.strip()]
+            logger.info(f"Including tables: {include_tables_list}")
+
+        if exclude_tables:
+            exclude_tables_list = [table.strip() for table in exclude_tables.split(',') if table.strip()]
+            logger.info(f"Excluding tables: {exclude_tables_list}")
+
         try:
             if isinstance(dsn_or_db_path, str):
                 return SQLDatabase.from_uri(
                     dsn_or_db_path, 
                     sample_rows_in_table_info=0,
-                    ignore_tables=exclude_tables,
-                    include_tables=include_tables
+                    ignore_tables=exclude_tables_list,
+                    include_tables=include_tables_list
                 )
         except Exception as e:
             logger.error(f"Error loading the database: {e}")
@@ -124,6 +134,8 @@ class SimpleText2SQLAgent:
             using=render_results_using
         )
 
+        # TODO: There should be an unified standardization maintained
+        # Which should match with the serializers key
         return {
             "bot_message": "Here are your fetch results",
             "sql": result["sql"],
