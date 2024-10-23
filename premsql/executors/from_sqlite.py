@@ -2,10 +2,11 @@ import sqlite3
 import time
 
 from premsql.executors.base import BaseExecutor
-
+from premsql.utils import convert_sqlite_dsn_to_path
 
 class SQLiteExecutor(BaseExecutor):
     def execute_sql(self, sql: str, dsn_or_db_path: str) -> dict:
+        dsn_or_db_path = convert_sqlite_dsn_to_path(dsn=dsn_or_db_path)
         conn = sqlite3.connect(dsn_or_db_path)
         cursor = conn.cursor()
 
