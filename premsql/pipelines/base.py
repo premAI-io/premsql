@@ -104,12 +104,14 @@ class AgentBase(ABC):
         db_connection_uri: str,
         config: dict,
         session_db_path: Optional[str] = None,
+        route_worker_kwargs: Optional[dict]=None
     ) -> None:
         self.session_name, self.db_connection_uri = session_name, db_connection_uri
         self.config = config
         self.history = AgentInteractionMemory(
             session_name=session_name, db_path=session_db_path
         )
+        self.route_worker_kwargs = route_worker_kwargs
 
     @abstractmethod
     def run(

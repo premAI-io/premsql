@@ -22,16 +22,14 @@ class BaseLineFollowupWorker(WorkerBase):
         max_new_tokens: Optional[int] = 128,
     ) -> FollowupWorkerOutput:
         if prev_output.route_taken == "query":
-            error = (prev_output.error_from_sql_worker or "") + "\n" + user_feedback
+            error = "\n".join(filter(None, [prev_output.error_from_sql_worker, user_feedback]))
             dataframe = prev_output.sql_output_dataframe
         elif prev_output.route_taken == "plot":
-            error = (prev_output.error_from_plot_worker or "") + "\n" + user_feedback
+            error = "\n".join(filter(None, [prev_output.error_from_plot_worker, user_feedback]))
             dataframe = prev_output.plot_input_dataframe
         elif prev_output.route_taken == "analyse":
             dataframe = prev_output.analysis_input_dataframe
-            error = (
-                (prev_output.error_from_analysis_worker or "") + "\n" + user_feedback
-            )
+            error = "\n".join(filter(None, [prev_output.error_from_analysis_worker, user_feedback]))
         else:
             error = user_feedback
             dataframe = next(

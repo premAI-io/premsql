@@ -45,6 +45,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
             i * chunk_size : (i + 1) * chunk_size] for i in range(num_chunks)
         ][:max_chunks]
         analysis_list = []
+        num_errors = 0
 
         for i, chunk in tqdm(enumerate(chunks), total=len(chunks)):
             analysis, error_from_model = self.analyse(
@@ -55,6 +56,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 prompt_template=analysis_prompt_template
             )
             if error_from_model:
+                num_errors += 1
                 logger.error(f"Error while analysing: {i}, Skipping ...")
                 continue
                 
@@ -70,16 +72,23 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 for analysis in analysis_list
             ]
         )
-        summarized_analysis_prompt = merger_prompt_template.format(
-            analysis=analysis_list_str
-        )
-        summary = self.generator.generate(
-            data_blob={"prompt": summarized_analysis_prompt},
-            temperature=temperature,
-            max_new_tokens=max_new_tokens,
-            postprocess=False,
-        )
-        if summary == "":
+        if num_errors < len(chunks):
+            summarized_analysis_prompt = merger_prompt_template.format(
+                analysis=analysis_list_str
+            )
+            summary = self.generator.generate(
+                data_blob={"prompt": summarized_analysis_prompt},
+                temperature=temperature,
+                max_new_tokens=max_new_tokens,
+                postprocess=False,
+            )
+            analysis = {
+                "analyse": summary,
+                "analysis_reasoning": "Analysis summarised by AI",
+            }
+            error_from_model = None
+            
+        else:
             analysis = {
                 "analyse": "\n".join(
                     [
@@ -90,12 +99,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 "analysis_reasoning": "Appending all the analysis",
             }
             error_from_model = "Model not able to summarise analysis"
-        else:
-            analysis = {
-                "analyse": summary,
-                "analysis_reasoning": "Analysis summarised by AI",
-            }
-            error_from_model = None
+
         return analysis, error_from_model
 
     def analyse(

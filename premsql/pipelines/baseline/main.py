@@ -28,12 +28,14 @@ class BaseLineAgent(AgentBase):
         include_tables: Optional[list] = None,
         exclude_tables: Optional[list] = None,
         auto_filter_tables: Optional[bool]=False,
+        route_worker_kwargs: Optional[dict]=None,
     ) -> None:
         super().__init__(
             session_name=session_name,
             db_connection_uri=db_connection_uri,
             config=config,
-            session_db_path=session_db_path
+            session_db_path=session_db_path,
+            route_worker_kwargs=route_worker_kwargs
         )
         self.text2sql_worker = BaseLineText2SQLWorker(
             db_connection_uri=db_connection_uri,
@@ -102,21 +104,21 @@ class BaseLineAgent(AgentBase):
         input_dataframe: Optional[pd.DataFrame],
         dataframe_from_history: Optional[pd.DataFrame]
     ):
-
         decision_mappign = {
             "query": lambda: self.text2sql_worker.run(
                 question=question,
-                render_results_using="json"
+                render_results_using="json",
+                **self.route_worker_kwargs.get("query", {})
             ),
             "analyse": lambda: self.analysis_worker.run(
                 question=question,
                 input_dataframe=dataframe_from_history if input_dataframe is None else input_dataframe,
-                verbose=False,
-                do_chunkwise_analysis=True
+                **self.route_worker_kwargs.get("analyse", {})
             ),
             "plot": lambda: self.plotter_worker.run(
                 question=question,
-                input_dataframe=dataframe_from_history if input_dataframe is None else input_dataframe
+                input_dataframe=dataframe_from_history if input_dataframe is None else input_dataframe,
+                **self.route_worker_kwargs.get("plot", {})
             ),
         }
         return decision_mappign[route_to]()
@@ -180,7 +182,8 @@ class BaseLineAgent(AgentBase):
             followup_output = self.followup_worker.run(
                 prev_output=self.history.get(limit=1)[0],
                 user_feedback=question,
-                db_schema=self.text2sql_worker.db.get_context()["table_info"]
+                db_schema=self.text2sql_worker.db.get_context()["table_info"],
+                **self.route_worker_kwargs.get("followup", {})
             )
         return ExitWorkerOutput(
             session_name=self.session_name,
