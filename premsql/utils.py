@@ -23,6 +23,13 @@ def convert_sqlite_path_to_dsn(path: str):
     return f"sqlite:///{os.path.abspath(path)}"
 
 
+def convert_sqlite_dsn_to_path(dsn: str) -> str:
+    sqlite3_pattern = r"^sqlite:\/\/\/(.*)"
+    match = re.match(sqlite3_pattern, dsn)
+    if match:
+        return os.path.abspath(match.group(1))
+    return dsn
+
 def print_data(data: dict):
     if "prompt" in data:
         prompt = data["prompt"]
