@@ -102,15 +102,14 @@ class AgentBase(ABC):
         self,
         session_name: str,
         db_connection_uri: str,
-        config: dict,
         session_db_path: Optional[str] = None,
         route_worker_kwargs: Optional[dict]=None
     ) -> None:
         self.session_name, self.db_connection_uri = session_name, db_connection_uri
-        self.config = config
         self.history = AgentInteractionMemory(
             session_name=session_name, db_path=session_db_path
         )
+        self.session_db_path = self.history.db_path
         self.route_worker_kwargs = route_worker_kwargs
 
     @abstractmethod
@@ -159,6 +158,11 @@ class AgentBase(ABC):
         input_dataframe: Optional[dict] = None,
         server_mode: Optional[bool] = False,
     ) -> Union[ExitWorkerOutput, AgentOutput]:
+        if server_mode:
+            kwargs = self.route_worker_kwargs.get("plot", None)
+            kwargs = {"plot_image": False} if kwargs is None else {**kwargs, "plot_image": False}
+            self.route_worker_kwargs["plot"] = kwargs
+
         output = self.run(question=question, input_dataframe=input_dataframe)
         # TODO: Watch out dict here type mismatch with run
         self.history.push(output=output)

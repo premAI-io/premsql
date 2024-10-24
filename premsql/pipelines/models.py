@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 from typing import Dict, Literal, Optional
 from pydantic import BaseModel, Field
@@ -138,6 +139,7 @@ class AgentOutput(BaseModel):
     followup_route: Optional[Literal["plot", "analyse", "query", "followup"]] = None
     followup_suggestion: Optional[str] = None
     error_from_pipeline: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
 
     def show_output_dataframe(self, ) -> pd.DataFrame:
         dataframe = None

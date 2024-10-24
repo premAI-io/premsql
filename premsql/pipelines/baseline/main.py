@@ -19,7 +19,6 @@ class BaseLineAgent(AgentBase):
         self,
         session_name: str,
         db_connection_uri: str,
-        config: dict,
         specialized_model1: Text2SQLGeneratorBase,
         specialized_model2: Text2SQLGeneratorBase,
         executor: BaseExecutor,
@@ -33,7 +32,6 @@ class BaseLineAgent(AgentBase):
         super().__init__(
             session_name=session_name,
             db_connection_uri=db_connection_uri,
-            config=config,
             session_db_path=session_db_path,
             route_worker_kwargs=route_worker_kwargs
         )

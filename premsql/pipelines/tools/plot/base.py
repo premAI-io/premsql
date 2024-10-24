@@ -20,6 +20,9 @@ class BasePlotTool(ABC):
         image.save(buffered, format="PNG")
         return base64.b64encode(buffered.getvalue()).decode()
     
+    def save_image(self, image: Image.Image, file_path: str, format: str = "PNG"):
+        image.save(file_path, format=format)
+    
     def plot_from_base64(self, output_base64: str):
         image_data = base64.b64decode(output_base64)
         return Image.open(io.BytesIO(image_data))

@@ -1,3 +1,4 @@
+import os 
 import sqlite3
 from typing import List, Optional, Literal
 
@@ -10,7 +11,9 @@ logger = setup_console_logger("[PIPELINE-MEMORY]")
 class AgentInteractionMemory:
     def __init__(self, session_name: str, db_path: Optional[str] = None):
         self.session_name = session_name
-        self.db_path = db_path or "premsql_pipeline_memory.db"
+        self.db_path = db_path or os.path.join(
+            os.getcwd(), "premsql_pipeline_memory.db"
+        )
         self.conn = sqlite3.connect(self.db_path)
         self.create_table_if_not_exists()
 

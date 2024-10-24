@@ -165,7 +165,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
             sql_string=generated_sql,
             sql_reasoning=None,
             input_dataframe=None,
-            output_dataframe=result["dataframe"],
+            output_dataframe=result["dataframe"], # Truncating to 
             question=question,
             error_from_model=result["error_from_model"],
             additional_input={

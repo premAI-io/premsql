@@ -1,6 +1,9 @@
 from typing import Any, Dict, Literal
 import pandas as pd
 from premsql.executors.from_langchain import SQLDatabase
+from premsql.logger import setup_console_logger
+
+logger = setup_console_logger("[PIPELINE-UTILS]")
 
 def convert_df_to_dict(df: pd.DataFrame):
     return {
@@ -30,6 +33,10 @@ def _render_error(error: str, sql: str, using: str) -> Dict[str, Any]:
 
 def _render_data(result, sql: str, using: str) -> Dict[str, Any]:
     table = pd.DataFrame(data=result.fetchall(), columns=result.keys())
+    if len(table) > 1000:
+        logger.info("Truncating output table to first 1000 rows only")
+        table = table.iloc[:1000, :]
+
     to_show = {"sql_string": sql, "error_from_model": None, "dataframe": table}
 
     if using == "json":
