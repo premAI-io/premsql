@@ -1,7 +1,9 @@
 from datetime import datetime
-import pandas as pd
 from typing import Dict, Literal, Optional
+
+import pandas as pd
 from pydantic import BaseModel, Field
+
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[BASE-MODELS]")
@@ -28,7 +30,9 @@ class Text2SQLWorkerOutput(BaseWorkerOutput):
 
     def show_output_dataframe(self) -> pd.DataFrame:
         if self.output_dataframe:
-            return pd.DataFrame(self.output_dataframe["data"], columns=self.output_dataframe["columns"])
+            return pd.DataFrame(
+                self.output_dataframe["data"], columns=self.output_dataframe["columns"]
+            )
         return pd.DataFrame()
 
 
@@ -108,7 +112,9 @@ class ExitWorkerOutput(BaseModel):
         default=None, description="Additional input data"
     )
 
-    def show_output_dataframe(self, ) -> pd.DataFrame:
+    def show_output_dataframe(
+        self,
+    ) -> pd.DataFrame:
         dataframe = None
         if self.route_taken == "query":
             dataframe = self.sql_output_dataframe
@@ -116,7 +122,7 @@ class ExitWorkerOutput(BaseModel):
             dataframe = self.plot_output_dataframe
         elif self.route_taken == "analyse":
             dataframe = self.analysis_input_dataframe
-        
+
         if dataframe:
             return pd.DataFrame(dataframe["data"], columns=dataframe["columns"])
         return pd.DataFrame()
@@ -141,7 +147,9 @@ class AgentOutput(BaseModel):
     error_from_pipeline: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
-    def show_output_dataframe(self, ) -> pd.DataFrame:
+    def show_output_dataframe(
+        self,
+    ) -> pd.DataFrame:
         dataframe = None
         if self.route_taken == "query":
             dataframe = self.sql_output_dataframe
@@ -149,7 +157,7 @@ class AgentOutput(BaseModel):
             dataframe = self.plot_output_dataframe
         elif self.route_taken == "analyse":
             dataframe = self.analysis_input_dataframe
-        
+
         if dataframe:
             return pd.DataFrame(dataframe["data"], columns=dataframe["columns"])
         return pd.DataFrame()

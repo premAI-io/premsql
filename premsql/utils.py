@@ -30,6 +30,7 @@ def convert_sqlite_dsn_to_path(dsn: str) -> str:
         return os.path.abspath(match.group(1))
     return dsn
 
+
 def print_data(data: dict):
     if "prompt" in data:
         prompt = data["prompt"]

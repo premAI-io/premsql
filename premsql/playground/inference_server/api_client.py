@@ -1,9 +1,12 @@
-import requests
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 from urllib.parse import urljoin
+
+import requests
+
 
 class InferenceServerAPIError(Exception):
     pass
+
 
 class InferenceServerAPIClient:
     def __init__(self, timeout: int = 600) -> None:
@@ -12,11 +15,15 @@ class InferenceServerAPIClient:
             "Content-Type": "application/json",
         }
         self.timeout = timeout
-    
+
     def _make_request(
-        self, base_url: str, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None
+        self,
+        base_url: str,
+        method: str,
+        endpoint: str,
+        data: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        url = urljoin(base_url.rstrip('/'), endpoint)
+        url = urljoin(base_url.rstrip("/"), endpoint)
         try:
             response = requests.request(
                 method, url, headers=self.headers, json=data, timeout=self.timeout
@@ -36,3 +43,13 @@ class InferenceServerAPIClient:
     def get_session_info(self, base_url: str) -> Dict[str, Any]:
         endpoint = "/session_info"
         return self._make_request(base_url, "GET", endpoint)
+
+    def get_chat_history(self, base_url: str, message_id: int) -> Dict[str, Any]:
+        if message_id < 1:
+            raise ValueError("Message ID must be a positive integer")
+        endpoint = f"/chat_history/{message_id}"
+        return self._make_request(base_url, "GET", endpoint)
+
+    def delete_session(self, base_url: str) -> Dict[str, Any]:
+        endpoint = "/delete_session/"
+        return self._make_request(base_url, "DELETE", endpoint)

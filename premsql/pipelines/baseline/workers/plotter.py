@@ -1,26 +1,30 @@
 from typing import Optional
 
 import pandas as pd
+
 from premsql.generators.base import Text2SQLGeneratorBase
+from premsql.logger import setup_console_logger
 from premsql.pipelines.base import ChartPlotWorkerBase, ChartPlotWorkerOutput
 from premsql.pipelines.baseline.prompts import BASELINE_CHART_WORKER_PROMPT_TEMPLATE
 from premsql.pipelines.tools.plot.base import BasePlotTool
 from premsql.pipelines.utils import convert_df_to_dict
-from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[PLOT-WORKER]")
 
+
 class BaseLinePlotWorker(ChartPlotWorkerBase):
-    def __init__(self, generator: Text2SQLGeneratorBase, plot_tool: BasePlotTool) -> None:
+    def __init__(
+        self, generator: Text2SQLGeneratorBase, plot_tool: BasePlotTool
+    ) -> None:
         self.generator, self.plot_tool = generator, plot_tool
-    
+
     def run(
         self,
         question: str,
         input_dataframe: pd.DataFrame,
         temperature: Optional[float] = 0.1,
         max_new_tokens: Optional[int] = 100,
-        plot_image: Optional[bool]=True,
+        plot_image: Optional[bool] = True,
         prompt_template: Optional[str] = BASELINE_CHART_WORKER_PROMPT_TEMPLATE,
         **kwargs,
     ) -> ChartPlotWorkerOutput:
@@ -33,13 +37,13 @@ class BaseLinePlotWorker(ChartPlotWorkerBase):
                 data_blob={"prompt": prompt},
                 temperature=temperature,
                 max_new_tokens=max_new_tokens,
-                postprocess=False
+                postprocess=False,
             )
             to_plot = to_plot.replace("null", "None")
             plot_config = eval(to_plot)
             fig = self.plot_tool.run(data=input_dataframe, plot_config=plot_config)
             logger.info(f"Plot config: {plot_config}")
-            
+
             if plot_image:
                 output = self.plot_tool.convert_image_to_base64(
                     self.plot_tool.convert_plot_to_image(fig=fig)
@@ -59,8 +63,8 @@ class BaseLinePlotWorker(ChartPlotWorkerBase):
                 additional_input={
                     "temperature": temperature,
                     "max_new_tokens": max_new_tokens,
-                    **kwargs
-                }
+                    **kwargs,
+                },
             )
 
         except Exception as e:
@@ -78,4 +82,3 @@ class BaseLinePlotWorker(ChartPlotWorkerBase):
                     **kwargs,
                 },
             )
-        

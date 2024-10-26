@@ -1,13 +1,16 @@
-import click
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import click
+
+
 @click.group()
 def cli():
     """PremSQL CLI to manage API servers"""
     pass
+
 
 @cli.command()
 def startapi():
@@ -16,11 +19,11 @@ def startapi():
     env = os.environ.copy()
     env["PYTHONPATH"] = str(premsql_path)
     manage_py_path = premsql_path / "premsql" / "playground" / "backend" / "manage.py"
-    
+
     if not manage_py_path.exists():
         click.echo(f"Error: manage.py not found at {manage_py_path}", err=True)
         sys.exit(1)
-    
+
     cmd = [sys.executable, str(manage_py_path), "runserver"]
     try:
         subprocess.run(cmd, env=env, check=True)
@@ -34,10 +37,20 @@ def startapi():
 @cli.command()
 def stopapi():
     click.echo("Stopping PremsQL API server...")
-    
+
     try:
         if sys.platform == "win32":
-            subprocess.run(["taskkill", "/F", "/IM", "python.exe", "/FI", "WINDOWTITLE eq premsql*"], check=True)
+            subprocess.run(
+                [
+                    "taskkill",
+                    "/F",
+                    "/IM",
+                    "python.exe",
+                    "/FI",
+                    "WINDOWTITLE eq premsql*",
+                ],
+                check=True,
+            )
         else:
             subprocess.run(["pkill", "-f", "manage.py runserver"], check=True)
         click.echo("API server stopped successfully.")
@@ -46,6 +59,7 @@ def stopapi():
     except Exception as e:
         click.echo(f"Error stopping the API server: {e}", err=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     cli()

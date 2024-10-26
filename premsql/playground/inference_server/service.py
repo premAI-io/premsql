@@ -1,17 +1,21 @@
+from contextlib import asynccontextmanager
 from datetime import datetime
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional
-from contextlib import asynccontextmanager
 
-from premsql.pipelines.base import AgentBase, AgentOutput
 from premsql.logger import setup_console_logger
+from premsql.pipelines.base import AgentBase, AgentOutput
 
 logger = setup_console_logger("[FASTAPI-INFERENCE-SERVICE]")
 
+
 class QuestionInput(BaseModel):
     question: str
+
 
 class SessionInfoResponse(BaseModel):
     status: int
@@ -21,8 +25,24 @@ class SessionInfoResponse(BaseModel):
     base_url: Optional[str] = None
     created_at: Optional[datetime] = None
 
+
+class ChatHistoryResponse(BaseModel):
+    message_id: int
+    agent_output: AgentOutput
+
+
+class CompletionResponse(BaseModel):
+    message_id: int
+    message: AgentOutput
+
+
 class AgentServer:
-    def __init__(self, agent: AgentBase, url: Optional[str]="0.0.0.0", port: Optional[int] = 8100) -> None:
+    def __init__(
+        self,
+        agent: AgentBase,
+        url: Optional[str] = "0.0.0.0",
+        port: Optional[int] = 8100,
+    ) -> None:
         self.agent = agent
         self.port = port
         self.url = url
@@ -35,7 +55,7 @@ class AgentServer:
         yield
         # Shutdown: Clean up resources
         logger.info("Shutting down the application")
-        if hasattr(self.agent, 'cleanup'):
+        if hasattr(self.agent, "cleanup"):
             await self.agent.cleanup()
 
     def create_app(self):
@@ -48,36 +68,91 @@ class AgentServer:
             allow_headers=["*"],  # Allows all headers
         )
 
-        @app.post("/completion", response_model=AgentOutput)
+        @app.post("/completion", response_model=CompletionResponse)
         async def completion(input_data: QuestionInput):
             try:
                 result = self.agent(question=input_data.question, server_mode=True)
-                return AgentOutput(**result.model_dump())
+                message_id = self.agent.history.get_latest_message_id()
+                return CompletionResponse(
+                    message=AgentOutput(**result.model_dump()), message_id=message_id
+                )
             except Exception as e:
                 logger.error(f"Error processing query: {str(e)}")
-                raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
-            
+                raise HTTPException(
+                    status_code=500, detail=f"Error processing query: {str(e)}"
+                )
+
+        # TODO: I need a method which will just get the "latets message_id"
+
+        @app.get("/chat_history/{message_id}", response_model=ChatHistoryResponse)
+        async def get_chat_history(message_id: int):
+            try:
+                exit_output = self.agent.history.get_by_message_id(
+                    message_id=message_id
+                )
+                if exit_output is None:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"Message with ID {message_id} not found",
+                    )
+                agent_output = self.agent.convert_exit_output_to_agent_output(
+                    exit_output=exit_output
+                )
+                return ChatHistoryResponse(
+                    message_id=message_id, agent_output=agent_output
+                )
+            except Exception as e:
+                logger.error(f"Error retrieving chat history: {str(e)}")
+                raise HTTPException(
+                    status_code=500, detail=f"Error retrieving chat history: {str(e)}"
+                )
+
+        @app.delete("/delete_session/")
+        async def delete_session():
+            try:
+                if hasattr(self.agent, "history"):
+                    self.agent.history.delete_table()
+                    return JSONResponse(
+                        content={"message": "Session deleted successfully"},
+                        status_code=200,
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Agent does not have a valid history attribute",
+                    )
+            except Exception as e:
+                logger.error(f"Error deleting session: {str(e)}")
+                raise HTTPException(
+                    status_code=500, detail=f"Error deleting session: {str(e)}"
+                )
+
+        # TODO: Now I need to add the same thing in the api client
+
         @app.get("/health")
         async def health_check():
             return {"status": "healthy"}
-        
+
         @app.get("/session_info", response_model=SessionInfoResponse)
         async def get_session_info():
-            try:   
-                session_name = getattr(self.agent, 'session_name', None)
-                db_connection_uri = getattr(self.agent, 'db_connection_uri', None)
-                session_db_path = getattr(self.agent, 'session_db_path', None)
-                
-                if any(attr is None for attr in [session_name, db_connection_uri, session_db_path]):
+            try:
+                session_name = getattr(self.agent, "session_name", None)
+                db_connection_uri = getattr(self.agent, "db_connection_uri", None)
+                session_db_path = getattr(self.agent, "session_db_path", None)
+
+                if any(
+                    attr is None
+                    for attr in [session_name, db_connection_uri, session_db_path]
+                ):
                     raise ValueError("One or more required attributes are None")
-                
+
                 return SessionInfoResponse(
                     status=200,
                     session_name=session_name,
                     db_connection_uri=db_connection_uri,
                     session_db_path=session_db_path,
                     base_url=f"{self.url}:{self.port}",
-                    created_at=datetime.now()
+                    created_at=datetime.now(),
                 )
             except Exception as e:
                 logger.error(f"Error getting session info: {str(e)}")
@@ -87,11 +162,13 @@ class AgentServer:
                     db_connection_uri=None,
                     session_db_path=None,
                     base_url=None,
-                    created_at=None
+                    created_at=None,
                 )
+
         return app
 
     def launch(self):
         import uvicorn
+
         logger.info(f"Starting server on port {self.port}")
         uvicorn.run(self.app, host=self.url, port=int(self.port))

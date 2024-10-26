@@ -1,20 +1,21 @@
 from textwrap import dedent
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from premsql.executors.base import BaseExecutor
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
+from premsql.pipelines.base import Text2SQLWorkerBase
 from premsql.pipelines.baseline.prompts import (
+    BASELINE_TEXT2SQL_TABLE_SELECTION_PROMPT,
     BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
     BASELINE_TEXT2SQL_WORKER_PROMPT,
-    BASELINE_TEXT2SQL_TABLE_SELECTION_PROMPT,
-    BASELINE_TEXT2SQL_WORKER_PROMPT_NO_FEWSHOT
+    BASELINE_TEXT2SQL_WORKER_PROMPT_NO_FEWSHOT,
 )
-from premsql.pipelines.utils import execute_and_render_result
 from premsql.pipelines.models import Text2SQLWorkerOutput
-from premsql.pipelines.base import Text2SQLWorkerBase
+from premsql.pipelines.utils import execute_and_render_result
 
 logger = setup_console_logger("[BASELINE-TEXT2SQL-WORKER]")
+
 
 class BaseLineText2SQLWorker(Text2SQLWorkerBase):
     def __init__(
@@ -25,7 +26,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         executor: Optional[BaseExecutor] = None,
         include_tables: Optional[list] = None,
         exclude_tables: Optional[list] = None,
-        auto_filter_tables: Optional[bool]=False,
+        auto_filter_tables: Optional[bool] = False,
     ):
         super().__init__(
             db_connection_uri=db_connection_uri,
@@ -38,32 +39,35 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         self.corrector = helper_model
         self.table_filer_worker = helper_model
         self.auto_filter_tables = auto_filter_tables
-    
+
     @staticmethod
     def show_dataframe(output: Text2SQLWorkerOutput):
         import pandas as pd
 
         if output.output_dataframe:
-            df = pd.DataFrame(output.output_dataframe["data"], columns=output.output_dataframe["columns"])
-            return df 
+            df = pd.DataFrame(
+                output.output_dataframe["data"],
+                columns=output.output_dataframe["columns"],
+            )
+            return df
         return pd.DataFrame({})
-    
+
     def filer_tables_from_schema(
-        self, question: str, additional_input: Optional[str]=None
+        self, question: str, additional_input: Optional[str] = None
     ) -> dict:
         prompt = BASELINE_TEXT2SQL_TABLE_SELECTION_PROMPT.format(
-            schema=self.db.get_context()['table_info'],
+            schema=self.db.get_context()["table_info"],
             additional_info=additional_input,
-            question=question
-        ) 
+            question=question,
+        )
         all_tables = self.db.get_usable_table_names()
         try:
             to_include = []
             output = self.corrector.generate({"prompt": prompt}, postprocess=False)
             output = eval(output)
             for table in all_tables:
-                if table in output['include']:
-                    to_include.append(table)          
+                if table in output["include"]:
+                    to_include.append(table)
         except Exception as e:
             logger.info(f"Error while selecting table: {e}")
             to_include = all_tables
@@ -81,8 +85,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         )
         logger.info(f"Taking the following selected table in schema: {to_include}")
         self.db = self.initialize_database(
-            db_connection_uri=self.db_connection_uri,
-            include_tables=to_include
+            db_connection_uri=self.db_connection_uri, include_tables=to_include
         )
         schema_prompt = self.db.get_context()["table_info"]
         knowledge_prompt = ""
@@ -112,7 +115,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
                 question=question,
             )
         return prompt
-    
+
     def run(
         self,
         question: str,
@@ -122,14 +125,16 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         max_new_tokens: Optional[int] = 256,
         render_results_using: Optional[Literal["json", "dataframe"]] = "json",
         prompt_template: Optional[str] = BASELINE_TEXT2SQL_WORKER_PROMPT,
-        error_handling_prompt_template: Optional[str] = BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
-        **kwargs
+        error_handling_prompt_template: Optional[
+            str
+        ] = BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
+        **kwargs,
     ) -> Text2SQLWorkerOutput:
         prompt = self._create_prompt(
             question=question,
             additional_knowledge=additional_knowledge,
             fewshot_dict=fewshot_dict,
-            prompt_template=prompt_template
+            prompt_template=prompt_template,
         )
         generated_sql = self.generator.execution_guided_decoding(
             data_blob={"prompt": prompt, "db_path": self.db_connection_uri},
@@ -138,7 +143,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
             max_new_tokens=max_new_tokens,
             max_retries=5,
             postprocess=True,
-            **kwargs
+            **kwargs,
         )
 
         result = execute_and_render_result(
@@ -154,7 +159,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
                 fewshot_dict=fewshot_dict,
                 prompt_template=prompt_template,
                 error_handling_prompt_template=error_handling_prompt_template,
-                **kwargs
+                **kwargs,
             )
             result = execute_and_render_result(
                 db=self.db, sql=generated_sql, using=render_results_using
@@ -165,7 +170,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
             sql_string=generated_sql,
             sql_reasoning=None,
             input_dataframe=None,
-            output_dataframe=result["dataframe"], # Truncating to 
+            output_dataframe=result["dataframe"],  # Truncating to
             question=question,
             error_from_model=result["error_from_model"],
             additional_input={
@@ -174,9 +179,9 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
                 "temperature": temperature,
                 "max_new_tokens": max_new_tokens,
                 **kwargs,
-            }
+            },
         )
-        
+
     def do_correction(
         self,
         question: str,
@@ -187,7 +192,7 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         error_handling_prompt_template: Optional[
             str
         ] = BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
-        **kwargs
+        **kwargs,
     ):
         if not self.corrector:
             logger.info("Corrector model not defined, no furthur correction possible.")

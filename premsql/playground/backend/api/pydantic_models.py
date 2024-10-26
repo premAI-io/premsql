@@ -1,13 +1,17 @@
 from datetime import datetime
 from typing import List, Literal, Optional
-from pydantic import BaseModel, Field, ConfigDict
-from premsql.pipelines.base import AgentOutput
 
-# All the Session Models 
+from pydantic import BaseModel, ConfigDict, Field
+
+from premsql.pipelines.models import AgentOutput
+
+# All the Session Models
+
 
 class SessionCreationRequest(BaseModel):
     base_url: str = Field(...)
     model_config = ConfigDict(extra="forbid")
+
 
 class SessionCreationResponse(BaseModel):
     status_code: Literal[200, 500] = Field(...)
@@ -20,15 +24,17 @@ class SessionCreationResponse(BaseModel):
     created_at: Optional[datetime] = None
     error_message: Optional[str] = None
 
+
 class SessionSummary(BaseModel):
     session_id: int
-    session_name: str  
+    session_name: str
     created_at: datetime
     base_url: str
     db_connection_uri: str
     session_db_path: str
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class SessionListResponse(BaseModel):
     status_code: Literal[200, 500]
@@ -39,11 +45,14 @@ class SessionListResponse(BaseModel):
     page_size: Optional[int] = None
     error_message: Optional[str] = None
 
+
 # All the chat message models
+
 
 class CompletionCreationRequest(BaseModel):
     session_name: str
     question: str
+
 
 class CompletionCreationResponse(BaseModel):
     status_code: Literal[200, 500]
@@ -52,19 +61,22 @@ class CompletionCreationResponse(BaseModel):
     session_name: Optional[str] = None
     created_at: Optional[datetime] = None
     message: Optional[AgentOutput] = None
+    question: Optional[str] = None
     error_message: Optional[str] = None
+
 
 class CompletionSummary(BaseModel):
     message_id: int
     session_name: str
     created_at: datetime
-    message: AgentOutput
+    question: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
-    
+
+
 class CompletionListResponse(BaseModel):
     status_code: Literal[200, 500]
     status: Literal["success", "error"]
-    data: Optional[List[CompletionSummary]] = None
+    completions: Optional[List[CompletionSummary]] = None
     total_count: Optional[int] = None
     error_message: Optional[str] = None

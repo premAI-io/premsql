@@ -1,11 +1,13 @@
 from rest_framework import serializers
 
-# NOTE: This serializer should be matching with the AgentOutput defined in the base pipeline class
+
 class AgentOutputSerializer(serializers.Serializer):
     session_name = serializers.CharField()
     question = serializers.CharField()
     db_connection_uri = serializers.CharField()
-    route_taken = serializers.ChoiceField(choices=["plot", "analyse", "query", "followup"])
+    route_taken = serializers.ChoiceField(
+        choices=["plot", "analyse", "query", "followup"]
+    )
     input_dataframe = serializers.DictField(allow_null=True)
     output_dataframe = serializers.DictField(allow_null=True)
     sql_string = serializers.CharField(allow_null=True)
@@ -13,7 +15,9 @@ class AgentOutputSerializer(serializers.Serializer):
     reasoning = serializers.CharField(allow_null=True)
     plot_config = serializers.DictField(allow_null=True)
     image_to_plot = serializers.CharField(allow_null=True)
-    followup_route = serializers.ChoiceField(choices=["plot", "analyse", "query", "followup"], allow_null=True)
+    followup_route = serializers.ChoiceField(
+        choices=["plot", "analyse", "query", "followup"], allow_null=True
+    )
     followup_suggestion = serializers.CharField(allow_null=True)
     error_from_pipeline = serializers.CharField(allow_null=True)
 
@@ -21,6 +25,7 @@ class AgentOutputSerializer(serializers.Serializer):
 # Sessions
 class SessionCreationRequestSerializer(serializers.Serializer):
     base_url = serializers.CharField()
+
 
 class SessionCreationResponseSerializer(serializers.Serializer):
     status_code = serializers.ChoiceField(choices=[200, 500])
@@ -33,6 +38,7 @@ class SessionCreationResponseSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 class SessionSummarySerializer(serializers.Serializer):
     session_id = serializers.IntegerField()
     session_name = serializers.CharField(max_length=255)
@@ -40,6 +46,7 @@ class SessionSummarySerializer(serializers.Serializer):
     base_url = serializers.CharField()
     db_connection_uri = serializers.CharField()
     session_db_path = serializers.CharField()
+
 
 class SessionListResponseSerializer(serializers.Serializer):
     status_code = serializers.ChoiceField(choices=[200, 500])
@@ -50,37 +57,44 @@ class SessionListResponseSerializer(serializers.Serializer):
     page_size = serializers.IntegerField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
 
+
 # Chats (Completions)
 class CompletionCreationRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField()
     question = serializers.CharField()
+
 
 class CompletionCreationResponseSerializer(serializers.Serializer):
     status_code = serializers.ChoiceField(choices=[200, 500])
     status = serializers.ChoiceField(choices=["success", "error"])
     message_id = serializers.IntegerField(allow_null=True)
     session_name = serializers.CharField(allow_null=True)
+    message = message = AgentOutputSerializer(allow_null=True)
     created_at = serializers.DateTimeField(allow_null=True)
-    message = AgentOutputSerializer(allow_null=True)
+    question = serializers.CharField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
+
 
 class CompletionSummarySerializer(serializers.Serializer):
     message_id = serializers.IntegerField()
     session_name = serializers.CharField()
     created_at = serializers.DateTimeField()
-    message = AgentOutputSerializer()
+    question = serializers.CharField(allow_null=True)
+
 
 class CompletionListResponseSerializer(serializers.Serializer):
     status_code = serializers.ChoiceField(choices=[200, 500])
     status = serializers.ChoiceField(choices=["success", "error"])
-    data = CompletionSummarySerializer(many=True, allow_null=True)
+    completions = CompletionSummarySerializer(many=True, allow_null=True)
     total_count = serializers.IntegerField(allow_null=True)
     error_message = serializers.CharField(allow_null=True)
+
 
 # Utility function for creating model serializers
 def create_model_serializer(model_class):
     class ModelSerializer(serializers.ModelSerializer):
         class Meta:
             model = model_class
-            fields = '__all__'
+            fields = "__all__"
+
     return ModelSerializer

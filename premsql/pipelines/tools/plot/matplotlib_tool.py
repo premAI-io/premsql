@@ -1,30 +1,34 @@
 import io
-from typing import Dict, Callable
-from PIL import Image
+from typing import Callable, Dict
+
 import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib.figure import Figure
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from PIL import Image
 
 from premsql.logger import setup_console_logger
 from premsql.pipelines.tools.plot.base import BasePlotTool
 
 logger = setup_console_logger("[MATPLOTLIB-TOOL]")
 
+
 class SimpleMatplotlibTool(BasePlotTool):
     def __init__(self):
-        self.plot_functions: Dict[str, Callable[[pd.DataFrame, str, str, Axes], None]] = {
+        self.plot_functions: Dict[
+            str, Callable[[pd.DataFrame, str, str, Axes], None]
+        ] = {
             "area": self._area_plot,
             "bar": self._bar_plot,
             "scatter": self._scatter_plot,
             "histogram": self._histogram_plot,
             "line": self._line_plot,
         }
-    
+
     def run(self, data: pd.DataFrame, plot_config: Dict[str, str]) -> Figure:
         try:
             self._validate_config(data, plot_config)
-            
+
             plot_type = plot_config["plot_type"]
             x = plot_config["x"]
             y = plot_config["y"]
@@ -46,11 +50,13 @@ class SimpleMatplotlibTool(BasePlotTool):
         required_keys = ["plot_type", "x", "y"]
         missing_keys = [key for key in required_keys if key not in plot_config]
         if missing_keys:
-            raise ValueError(f"Missing required keys in plot_config: {', '.join(missing_keys)}")
+            raise ValueError(
+                f"Missing required keys in plot_config: {', '.join(missing_keys)}"
+            )
 
         if plot_config["x"] not in df.columns:
             raise ValueError(f"Column '{plot_config['x']}' not found in DataFrame")
-        
+
         if plot_config["y"] not in df.columns:
             raise ValueError(f"Column '{plot_config['y']}' not found in DataFrame")
 

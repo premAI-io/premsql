@@ -41,7 +41,7 @@ class Text2SQLGeneratorPremAI(Text2SQLGeneratorBase):
 
     @property
     def model_name_or_path(self) -> str:
-        return self.model_name 
+        return self.model_name
 
     def generate(
         self,

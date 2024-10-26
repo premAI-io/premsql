@@ -1,18 +1,19 @@
 from typing import Any, Dict, Literal
+
 import pandas as pd
+
 from premsql.executors.from_langchain import SQLDatabase
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[PIPELINE-UTILS]")
 
+
 def convert_df_to_dict(df: pd.DataFrame):
-    return {
-        "data": df.to_dict(), 
-        "columns": list(df.keys())
-    }
+    return {"data": df.to_dict(), "columns": list(df.keys())}
+
 
 def execute_and_render_result(
-    db: SQLDatabase, sql: str, using: Literal["dataframe","json"]
+    db: SQLDatabase, sql: str, using: Literal["dataframe", "json"]
 ):
     result = db.run_no_throw(command=sql, fetch="cursor")
 
@@ -33,9 +34,9 @@ def _render_error(error: str, sql: str, using: str) -> Dict[str, Any]:
 
 def _render_data(result, sql: str, using: str) -> Dict[str, Any]:
     table = pd.DataFrame(data=result.fetchall(), columns=result.keys())
-    if len(table) > 1000:
-        logger.info("Truncating output table to first 1000 rows only")
-        table = table.iloc[:1000, :]
+    if len(table) > 200:
+        logger.info("Truncating output table to first 200 rows only")
+        table = table.iloc[:200, :]
 
     to_show = {"sql_string": sql, "error_from_model": None, "dataframe": table}
 

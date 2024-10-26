@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import AnalysisWorkerBase, AnalyserWorkerOutput
+from premsql.pipelines.base import AnalyserWorkerOutput, AnalysisWorkerBase
 from premsql.pipelines.baseline.prompts import (
     BASELINE_ANALYSIS_MERGER_PROMPT,
     BASELINE_ANALYSIS_WORKER_PROMPT,
@@ -24,16 +24,17 @@ CHUNK_TEMPLATE = """
 
 # TODO: Need to think of the case when there is no df being passed
 
+
 class BaseLineAnalyserWorker(AnalysisWorkerBase):
     def __init__(self, generator: Text2SQLGeneratorBase) -> None:
         self.generator = generator
-    
+
     def run_chunkwise_analysis(
         self,
         question: str,
         input_dataframe: pd.DataFrame,
-        chunk_size: Optional[int]=20,
-        max_chunks: Optional[int]=20,
+        chunk_size: Optional[int] = 20,
+        max_chunks: Optional[int] = 20,
         temperature: Optional[float] = 0.19,
         max_new_tokens: Optional[int] = 600,
         analysis_prompt_template: Optional[str] = BASELINE_ANALYSIS_WORKER_PROMPT,
@@ -41,8 +42,9 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
         verbose: Optional[bool] = False,
     ) -> tuple[str, str]:
         num_chunks = (len(input_dataframe) + chunk_size - 1) // chunk_size
-        chunks = [input_dataframe[
-            i * chunk_size : (i + 1) * chunk_size] for i in range(num_chunks)
+        chunks = [
+            input_dataframe[i * chunk_size : (i + 1) * chunk_size]
+            for i in range(num_chunks)
         ][:max_chunks]
         analysis_list = []
         num_errors = 0
@@ -53,19 +55,22 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 input_dataframe=chunk,
                 temperature=temperature,
                 max_new_tokens=max_new_tokens,
-                prompt_template=analysis_prompt_template
+                prompt_template=analysis_prompt_template,
             )
             if error_from_model:
                 num_errors += 1
                 logger.error(f"Error while analysing: {i}, Skipping ...")
                 continue
-                
+
             if verbose:
-                logger.info(CHUNK_TEMPLATE.format(
-                    analysis=analysis["analyse"], reasoning=analysis["analysis_reasoning"]
-                ))
+                logger.info(
+                    CHUNK_TEMPLATE.format(
+                        analysis=analysis["analyse"],
+                        reasoning=analysis["analysis_reasoning"],
+                    )
+                )
             analysis_list.append(analysis)
-        
+
         analysis_list_str = "\n".join(
             [
                 analysis["analyse"] + " " + analysis["analysis_reasoning"]
@@ -87,7 +92,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 "analysis_reasoning": "Analysis summarised by AI",
             }
             error_from_model = None
-            
+
         else:
             analysis = {
                 "analyse": "\n".join(
@@ -131,17 +136,16 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
             }
             error_from_model = str(e)
         return analysis, error_from_model
-    
 
     def run(
         self,
         question: str,
         input_dataframe: pd.DataFrame,
-        do_chunkwise_analysis: Optional[bool]=False,
-        chunk_size: Optional[int]=20,
-        max_chunks: Optional[int]=20,
+        do_chunkwise_analysis: Optional[bool] = False,
+        chunk_size: Optional[int] = 20,
+        max_chunks: Optional[int] = 20,
         temperature: Optional[float] = 0.19,
-        max_new_tokens: Optional[int]=600,
+        max_new_tokens: Optional[int] = 600,
         analysis_prompt_template: Optional[str] = BASELINE_ANALYSIS_WORKER_PROMPT,
         analysis_merger_template: Optional[str] = BASELINE_ANALYSIS_MERGER_PROMPT,
         verbose: Optional[bool] = False,
@@ -162,8 +166,8 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
         else:
             if len(input_dataframe) > chunk_size:
                 logger.info(
-                "Truncating table, you can also choose chunk wise analysis, but it takes more time."
-            )
+                    "Truncating table, you can also choose chunk wise analysis, but it takes more time."
+                )
             analysis, error_from_model = self.analyse(
                 question=question,
                 input_dataframe=input_dataframe.iloc[:chunk_size, :],
@@ -174,14 +178,14 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
         return AnalyserWorkerOutput(
             question=question,
             input_dataframe=convert_df_to_dict(df=input_dataframe),
-            analysis=analysis.get('analyse', None),
-            analysis_reasoning=analysis.get('analysis_reasoning', None),
+            analysis=analysis.get("analyse", None),
+            analysis_reasoning=analysis.get("analysis_reasoning", None),
             error_from_model=error_from_model,
             additional_input={
                 "temperature": temperature,
                 "max_new_tokens": max_new_tokens,
                 "chunkwise_analysis": do_chunkwise_analysis,
                 "chunk_size": chunk_size,
-                "max_chunks": max_chunks
+                "max_chunks": max_chunks,
             },
         )

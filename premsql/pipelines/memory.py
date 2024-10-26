@@ -1,6 +1,6 @@
-import os 
+import os
 import sqlite3
-from typing import List, Optional, Literal
+from typing import List, Literal, Optional
 
 from premsql.logger import setup_console_logger
 from premsql.pipelines.models import ExitWorkerOutput
@@ -22,7 +22,7 @@ class AgentInteractionMemory:
         cursor.execute(
             f"""
         CREATE TABLE IF NOT EXISTS {self.session_name} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message_id INTEGER PRIMARY KEY AUTOINCREMENT,
             question TEXT,
             db_connection_uri TEXT,
             route_taken TEXT,
@@ -51,17 +51,40 @@ class AgentInteractionMemory:
         )
         self.conn.commit()
 
-    def get(self, limit: Optional[int] = None) -> List[ExitWorkerOutput]:
+    def get(
+        self,
+        limit: Optional[int] = None,
+        order: Optional[Literal["DESC", "ASC"]] = "DESC",
+    ) -> List[tuple[int, ExitWorkerOutput]]:
         cursor = self.conn.cursor()
-        if limit is None:
-            cursor.execute(f"SELECT * FROM {self.session_name} ORDER BY id DESC")
+        query = f"SELECT * FROM {self.session_name} ORDER BY message_id {order}"
+        if limit is not None:
+            query += " LIMIT ?"
+            cursor.execute(query, (limit,))
         else:
-            cursor.execute(
-                f"SELECT * FROM {self.session_name} ORDER BY id DESC LIMIT ?", (limit,)
-            )
+            cursor.execute(query)
         rows = cursor.fetchall()
-        return [self._row_to_exit_worker_output(row) for row in rows]
-    
+        return [
+            {"message_id": row[0], "message": self._row_to_exit_worker_output(row)}
+            for row in rows
+        ]
+
+    def get_latest_message_id(self) -> Optional[int]:
+        cursor = self.conn.cursor()
+        query = f"SELECT message_id FROM {self.session_name} ORDER BY message_id DESC LIMIT 1"
+        cursor.execute(query)
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+    def get_by_message_id(self, message_id: int) -> Optional[dict]:
+        cursor = self.conn.cursor()
+        query = f"SELECT * FROM {self.session_name} WHERE message_id = ?"
+        cursor.execute(query, (message_id,))
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        return self._row_to_exit_worker_output(row=row)
+
     def push(self, output: ExitWorkerOutput):
         cursor = self.conn.cursor()
         cursor.execute(
@@ -82,31 +105,35 @@ class AgentInteractionMemory:
         logger.info("Pushed to the database")
 
     def _row_to_exit_worker_output(self, row) -> ExitWorkerOutput:
-        return ExitWorkerOutput(
-            session_name=self.session_name,
-            question=row[1],
-            db_connection_uri=row[2],
-            route_taken=row[3],
-            sql_string=row[4],
-            sql_reasoning=row[5],
-            sql_input_dataframe=self._parse_json(row[6]),
-            sql_output_dataframe=self._parse_json(row[7]),
-            error_from_sql_worker=row[8],
-            analysis=row[9],
-            analysis_reasoning=row[10],
-            analysis_input_dataframe=self._parse_json(row[11]),
-            error_from_analysis_worker=row[12],
-            plot_config=self._parse_json(row[13]),
-            plot_input_dataframe=self._parse_json(row[14]),
-            plot_output_dataframe=self._parse_json(row[15]),
-            image_to_plot=row[16],
-            plot_reasoning=row[17],
-            error_from_plot_worker=row[18],
-            followup_route_to_take=row[19],
-            followup_suggestion=row[20],
-            error_from_followup_worker=row[21],
-            additional_input=self._parse_json(row[22]),
-        )
+        try:
+            return ExitWorkerOutput(
+                session_name=self.session_name,
+                question=row[1],
+                db_connection_uri=row[2],
+                route_taken=row[3],
+                sql_string=row[4],
+                sql_reasoning=row[5],
+                sql_input_dataframe=self._parse_json(row[6]),
+                sql_output_dataframe=self._parse_json(row[7]),
+                error_from_sql_worker=row[8],
+                analysis=row[9],
+                analysis_reasoning=row[10],
+                analysis_input_dataframe=self._parse_json(row[11]),
+                error_from_analysis_worker=row[12],
+                plot_config=self._parse_json(row[13]),
+                plot_input_dataframe=self._parse_json(row[14]),
+                plot_output_dataframe=self._parse_json(row[15]),
+                image_to_plot=row[16],
+                plot_reasoning=row[17],
+                error_from_plot_worker=row[18],
+                followup_route_to_take=row[19],
+                followup_suggestion=row[20],
+                error_from_followup_worker=row[21],
+                additional_input=self._parse_json(row[22]),
+            )
+        except Exception as e:
+            logger.error(f"Error converting row to ExitWorkerOutput: {e}")
+            return None
 
     def _exit_worker_output_to_tuple(self, output: ExitWorkerOutput) -> tuple:
         return (
@@ -137,12 +164,24 @@ class AgentInteractionMemory:
     def _parse_json(self, json_str):
         import json
 
-        return json.loads(json_str) if json_str else None
+        if not json_str:
+            return None
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse JSON: {json_str}")
+            return None
 
     def _serialize_json(self, obj):
         import json
 
-        return json.dumps(obj) if obj else None
+        if obj is None:
+            return None
+        try:
+            return json.dumps(obj)
+        except TypeError:
+            logger.warning(f"Failed to serialize object to JSON: {obj}")
+            return None
 
     def clear(self):
         cursor = self.conn.cursor()
@@ -155,18 +194,30 @@ class AgentInteractionMemory:
     def __del__(self):
         self.close()
 
+    def delete_table(self):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(f"DROP TABLE IF EXISTS {self.session_name}")
+            self.conn.commit()
+            logger.info(f"Table '{self.session_name}' has been deleted.")
+        except sqlite3.Error as e:
+            logger.error(f"Error deleting table '{self.session_name}': {e}")
+        finally:
+            cursor.close()
+
     def get_latest_dataframe(
         self, decision: Literal["plot", "analyse", "query", "followup"]
     ) -> dict:
-        for content in self.get():
-            if decision == "plot" and content.plot_input_dataframe:
-                return content.plot_input_dataframe
-            elif decision == "analyse" and content.analysis_input_dataframe:
-                return content.analysis_input_dataframe
-            elif decision == "query" and content.sql_output_dataframe:
-                return content.sql_output_dataframe
-            elif decision == "followup" and content.sql_output_dataframe:
-                return content.sql_output_dataframe
-        
-        # If no matching dataframe is found, return an empty dictionary
+        contents = self.get(limit=1)
+        if not contents:
+            return {}
+
+        _, content = contents[0]
+        if decision == "plot" and content.plot_input_dataframe:
+            return content.plot_input_dataframe
+        elif decision == "analyse" and content.analysis_input_dataframe:
+            return content.analysis_input_dataframe
+        elif decision in ("query", "followup") and content.sql_output_dataframe:
+            return content.sql_output_dataframe
+
         return {}

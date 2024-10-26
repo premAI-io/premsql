@@ -1,10 +1,13 @@
 from typing import Optional
+
 import pandas as pd
+
 from premsql.logger import setup_console_logger
 from premsql.pipelines.base import RouterWorkerBase, RouterWorkerOutput
 from premsql.pipelines.utils import convert_df_to_dict
 
 logger = setup_console_logger("[BASELINE-ROUTER]")
+
 
 class SimpleRouterWorker(RouterWorkerBase):
     def run(
@@ -12,7 +15,7 @@ class SimpleRouterWorker(RouterWorkerBase):
     ) -> RouterWorkerOutput:
         if question.startswith("/query"):
             route_to = "query"
-        elif question.startswith('/analyse'):
+        elif question.startswith("/analyse"):
             route_to = "analyse"
         elif question.startswith("/plot"):
             route_to = "plot"
@@ -31,5 +34,5 @@ class SimpleRouterWorker(RouterWorkerBase):
             ),
             decision_reasoning="Simple routing based on question prefix",
             additional_input={},
-            error_from_model=None
+            error_from_model=None,
         )

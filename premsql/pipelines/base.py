@@ -19,6 +19,7 @@ from premsql.pipelines.models import (
 
 logger = setup_console_logger("[PIPELINE-BASE]")
 
+
 # If someone wants to make a new worker class
 class WorkerBase(ABC):
     @abstractmethod
@@ -103,7 +104,7 @@ class AgentBase(ABC):
         session_name: str,
         db_connection_uri: str,
         session_db_path: Optional[str] = None,
-        route_worker_kwargs: Optional[dict]=None
+        route_worker_kwargs: Optional[dict] = None,
     ) -> None:
         self.session_name, self.db_connection_uri = session_name, db_connection_uri
         self.history = AgentInteractionMemory(
@@ -160,7 +161,11 @@ class AgentBase(ABC):
     ) -> Union[ExitWorkerOutput, AgentOutput]:
         if server_mode:
             kwargs = self.route_worker_kwargs.get("plot", None)
-            kwargs = {"plot_image": False} if kwargs is None else {**kwargs, "plot_image": False}
+            kwargs = (
+                {"plot_image": False}
+                if kwargs is None
+                else {**kwargs, "plot_image": False}
+            )
             self.route_worker_kwargs["plot"] = kwargs
 
         output = self.run(question=question, input_dataframe=input_dataframe)
