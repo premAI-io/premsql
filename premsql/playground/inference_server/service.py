@@ -105,14 +105,11 @@ class AgentServer:
                 logger.error(f"Error retrieving chat history: {str(e)}")
                 raise HTTPException(
                     status_code=500, detail=f"Error retrieving chat history: {str(e)}"
-                )    
+                )
 
         @app.get("/health")
         async def health_check():
-            return {
-                "status_code": 200,
-                "status": "healthy"
-            }
+            return {"status_code": 200, "status": "healthy"}
 
         @app.get("/session_info", response_model=SessionInfoResponse)
         async def get_session_info():
@@ -145,9 +142,9 @@ class AgentServer:
                     base_url=None,
                     created_at=None,
                 )
-            
+
         return app
-    
+
     def launch(self):
         import uvicorn
 

@@ -146,7 +146,9 @@ def list_sessions(request):
             schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    "status": openapi.Schema(type=openapi.TYPE_STRING, example="success"),
+                    "status": openapi.Schema(
+                        type=openapi.TYPE_STRING, example="success"
+                    ),
                     "message": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),

@@ -21,7 +21,7 @@ class AgentInteractionMemory:
         cursor = self.conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cursor.fetchall()
-        return [table[0] for table in tables if table[0] != 'sqlite_sequence']
+        return [table[0] for table in tables if table[0] != "sqlite_sequence"]
 
     def create_table_if_not_exists(self):
         cursor = self.conn.cursor()

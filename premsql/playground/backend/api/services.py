@@ -1,5 +1,7 @@
+import subprocess
 from typing import Optional
 
+import requests
 from api.models import Completions, Session
 from api.pydantic_models import (
     CompletionCreationRequest,
@@ -8,23 +10,19 @@ from api.pydantic_models import (
     CompletionSummary,
     SessionCreationRequest,
     SessionCreationResponse,
+    SessionDeleteResponse,
     SessionListResponse,
     SessionSummary,
-    SessionDeleteResponse
 )
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.db import transaction
 
 from premsql.logger import setup_console_logger
 from premsql.pipelines.base import AgentOutput
-from premsql.playground import InferenceServerAPIClient
 from premsql.pipelines.memory import AgentInteractionMemory
+from premsql.playground import InferenceServerAPIClient
 from premsql.playground.backend.api.utils import stop_server_on_port
-
-import requests
-import subprocess
-from django.db import transaction
-
 
 logger = setup_console_logger("[SESSION-MANAGER]")
 
@@ -123,7 +121,9 @@ class SessionManageService:
                     running_port = int(session.base_url.split(":")[1])
                     stop_server_on_port(port=running_port)
                 except Exception as e:
-                    logger.info("process killing failed, please shut down inference server manually")
+                    logger.info(
+                        "process killing failed, please shut down inference server manually"
+                    )
                     pass
 
                 # Proceed with deletion
@@ -134,27 +134,27 @@ class SessionManageService:
                     session_name=session_name, db_path=session.session_db_path
                 )
                 logger.info("Deleted the session registered inside PremSQL Agent")
-                agent_memory.delete_table() 
+                agent_memory.delete_table()
                 return SessionDeleteResponse(
                     session_name=session_name,
                     status_code=200,
                     status="success",
-                    error_message=None
+                    error_message=None,
                 )
         except Session.DoesNotExist:
             return SessionDeleteResponse(
                 session_name=session_name,
                 status_code=404,
                 status="error",
-                error_message="Session does not exist"
+                error_message="Session does not exist",
             )
         except Exception as e:
             return SessionDeleteResponse(
                 session_name=session_name,
                 status_code=500,
                 status="error",
-                error_message=f"Session does not exist: {e}"
-            ) 
+                error_message=f"Session does not exist: {e}",
+            )
 
 
 class CompletionService:

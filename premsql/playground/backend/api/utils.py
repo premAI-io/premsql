@@ -1,10 +1,12 @@
+import logging
 import os
 import signal
 import subprocess
-import logging
+
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[BACKEND-UTILS]")
+
 
 def stop_server_on_port(port: int):
     try:
