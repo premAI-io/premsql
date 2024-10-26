@@ -105,33 +105,14 @@ class AgentServer:
                 logger.error(f"Error retrieving chat history: {str(e)}")
                 raise HTTPException(
                     status_code=500, detail=f"Error retrieving chat history: {str(e)}"
-                )
-
-        @app.delete("/delete_session/")
-        async def delete_session():
-            try:
-                if hasattr(self.agent, "history"):
-                    self.agent.history.delete_table()
-                    return JSONResponse(
-                        content={"message": "Session deleted successfully"},
-                        status_code=200,
-                    )
-                else:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Agent does not have a valid history attribute",
-                    )
-            except Exception as e:
-                logger.error(f"Error deleting session: {str(e)}")
-                raise HTTPException(
-                    status_code=500, detail=f"Error deleting session: {str(e)}"
-                )
-
-        # TODO: Now I need to add the same thing in the api client
+                )    
 
         @app.get("/health")
         async def health_check():
-            return {"status": "healthy"}
+            return {
+                "status_code": 200,
+                "status": "healthy"
+            }
 
         @app.get("/session_info", response_model=SessionInfoResponse)
         async def get_session_info():
@@ -164,9 +145,9 @@ class AgentServer:
                     base_url=None,
                     created_at=None,
                 )
-
+            
         return app
-
+    
     def launch(self):
         import uvicorn
 

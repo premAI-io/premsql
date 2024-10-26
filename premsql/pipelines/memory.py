@@ -17,6 +17,12 @@ class AgentInteractionMemory:
         self.conn = sqlite3.connect(self.db_path)
         self.create_table_if_not_exists()
 
+    def list_sessions(self) -> List[str]:
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        return [table[0] for table in tables if table[0] != 'sqlite_sequence']
+
     def create_table_if_not_exists(self):
         cursor = self.conn.cursor()
         cursor.execute(
@@ -103,6 +109,17 @@ class AgentInteractionMemory:
         )
         self.conn.commit()
         logger.info("Pushed to the database")
+
+    def delete_table(self):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute(f"DROP TABLE IF EXISTS {self.session_name}")
+            self.conn.commit()
+            logger.info(f"Table '{self.session_name}' has been deleted.")
+        except sqlite3.Error as e:
+            logger.error(f"Error deleting table '{self.session_name}': {e}")
+        finally:
+            cursor.close()
 
     def _row_to_exit_worker_output(self, row) -> ExitWorkerOutput:
         try:

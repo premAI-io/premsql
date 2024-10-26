@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -131,70 +130,6 @@ def list_sessions(request):
 
 
 @swagger_auto_schema(
-    method="post",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "session_name": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Name of the session to delete"
-            )
-        },
-        required=["session_name"],
-    ),
-    responses={
-        200: openapi.Response(
-            "Session deleted successfully",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    "status": openapi.Schema(
-                        type=openapi.TYPE_STRING, example="success"
-                    ),
-                    "message": openapi.Schema(type=openapi.TYPE_STRING),
-                    "deleted_at": openapi.Schema(
-                        type=openapi.TYPE_STRING, format="date-time"
-                    ),
-                },
-            ),
-        ),
-        400: "Bad Request",
-        404: "Not Found",
-        500: "Internal Server Error",
-    },
-)
-@api_view(["POST"])
-def delete_session(request):
-    try:
-        session_name = request.data.get("session_name")
-        if not session_name:
-            return Response(
-                {"status": "error", "error_message": "session_name is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        session = SessionManageService().get_session(session_name=session_name)
-        if not session:
-            return Response(
-                {"status": "error", "error_message": "Session not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        session.delete()
-        return Response(
-            {
-                "status": "success",
-                "message": f"Session '{session_name}' deleted successfully",
-                "deleted_at": datetime.now().isoformat(),
-            }
-        )
-    except Exception as e:
-        return Response(
-            {"status": "error", "error_message": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-
-@swagger_auto_schema(
     method="delete",
     manual_parameters=[
         openapi.Parameter(
@@ -211,9 +146,7 @@ def delete_session(request):
             schema=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    "status": openapi.Schema(
-                        type=openapi.TYPE_STRING, example="success"
-                    ),
+                    "status": openapi.Schema(type=openapi.TYPE_STRING, example="success"),
                     "message": openapi.Schema(type=openapi.TYPE_STRING),
                 },
             ),
@@ -226,7 +159,7 @@ def delete_session(request):
 def delete_session(request, session_name):
     try:
         result = SessionManageService().delete_session(session_name=session_name)
-        return Response(result, status=result["status_code"])
+        return Response(result.model_dump(), status=result.status_code)
     except Exception as e:
         return Response(
             {"status": "error", "error_message": str(e)},

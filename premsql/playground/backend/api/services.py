@@ -10,14 +10,21 @@ from api.pydantic_models import (
     SessionCreationResponse,
     SessionListResponse,
     SessionSummary,
+    SessionDeleteResponse
 )
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 
 from premsql.logger import setup_console_logger
 from premsql.pipelines.base import AgentOutput
-from premsql.pipelines.memory import AgentInteractionMemory
 from premsql.playground import InferenceServerAPIClient
+from premsql.pipelines.memory import AgentInteractionMemory
+from premsql.playground.backend.api.utils import stop_server_on_port
+
+import requests
+import subprocess
+from django.db import transaction
+
 
 logger = setup_console_logger("[SESSION-MANAGER]")
 
@@ -110,40 +117,44 @@ class SessionManageService:
 
     def delete_session(self, session_name: str):
         try:
-            session = Session.objects.get(session_name=session_name)
-            client = InferenceServerAPIClient()
+            with transaction.atomic():
+                session = Session.objects.get(session_name=session_name)
+                try:
+                    running_port = int(session.base_url.split(":")[1])
+                    stop_server_on_port(port=running_port)
+                except Exception as e:
+                    logger.info("process killing failed, please shut down inference server manually")
+                    pass
 
-            # Small Hack ;_)
-            base_url = f"http://{session.base_url}"
-            response = client.delete_session(base_url=base_url)
-
-            if response.get("status") == 200:
+                # Proceed with deletion
+                Completions.objects.filter(session_name=session_name).delete()
                 session.delete()
-                return {
-                    "status_code": 200,
-                    "status": "success",
-                    "message": f"Session '{session_name}' deleted successfully",
-                }
-            else:
-                return {
-                    "status_code": response.get("status", 500),
-                    "status": "error",
-                    "error_message": response.get(
-                        "detail", "Unknown error occurred while deleting session"
-                    ),
-                }
-        except ObjectDoesNotExist:
-            return {
-                "status_code": 404,
-                "status": "error",
-                "error_message": f"Session '{session_name}' not found",
-            }
+                logger.info("Deleted all the chats")
+                agent_memory = AgentInteractionMemory(
+                    session_name=session_name, db_path=session.session_db_path
+                )
+                logger.info("Deleted the session registered inside PremSQL Agent")
+                agent_memory.delete_table() 
+                return SessionDeleteResponse(
+                    session_name=session_name,
+                    status_code=200,
+                    status="success",
+                    error_message=None
+                )
+        except Session.DoesNotExist:
+            return SessionDeleteResponse(
+                session_name=session_name,
+                status_code=404,
+                status="error",
+                error_message="Session does not exist"
+            )
         except Exception as e:
-            return {
-                "status_code": 500,
-                "status": "error",
-                "error_message": f"Error deleting session: {str(e)}",
-            }
+            return SessionDeleteResponse(
+                session_name=session_name,
+                status_code=500,
+                status="error",
+                error_message=f"Session does not exist: {e}"
+            ) 
 
 
 class CompletionService:

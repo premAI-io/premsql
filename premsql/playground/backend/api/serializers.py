@@ -58,6 +58,12 @@ class SessionListResponseSerializer(serializers.Serializer):
     error_message = serializers.CharField(allow_null=True)
 
 
+class SessionDeletionResponse(serializers.Serializer):
+    session_name = serializers.CharField(max_length=255)
+    status_code = serializers.ChoiceField(choices=[200, 404, 500])
+    status = serializers.ChoiceField(choices=["success", "error"])
+    error_message = serializers.CharField(allow_null=True)
+
 # Chats (Completions)
 class CompletionCreationRequestSerializer(serializers.Serializer):
     session_name = serializers.CharField()

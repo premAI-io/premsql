@@ -46,6 +46,12 @@ class SessionListResponse(BaseModel):
     error_message: Optional[str] = None
 
 
+class SessionDeleteResponse(BaseModel):
+    session_name: str
+    status_code: Literal[200, 404, 500]
+    status: Literal["success", "error"]
+    error_message: Optional[str]=None 
+
 # All the chat message models
 
 
