@@ -249,6 +249,7 @@ class CompletionService:
                 CompletionSummary(
                     message_id=completion.message_id,
                     session_name=completion.session_name,
+                    base_url=completion.session.base_url,
                     created_at=completion.created_at,
                     question=completion.question,
                 )

@@ -85,6 +85,7 @@ class CompletionCreationResponseSerializer(serializers.Serializer):
 class CompletionSummarySerializer(serializers.Serializer):
     message_id = serializers.IntegerField()
     session_name = serializers.CharField()
+    base_url = serializers.CharField()
     created_at = serializers.DateTimeField()
     question = serializers.CharField(allow_null=True)
 

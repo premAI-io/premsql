@@ -32,6 +32,14 @@ class InferenceServerAPIClient:
             return response.json()
         except requests.RequestException as e:
             raise InferenceServerAPIError(f"API request failed: {str(e)}")
+    
+    def is_online(self, base_url: str) -> bool:
+        endpoint = "/health"
+        try:
+            response = self._make_request(base_url, "GET", endpoint)
+            return response.get("status_code")
+        except Exception as e:
+            return 500
 
     def post_completion(self, base_url: str, question: str) -> Dict[str, Any]:
         if not question.strip():

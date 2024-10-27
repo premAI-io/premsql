@@ -75,6 +75,7 @@ class CompletionCreationResponse(BaseModel):
 class CompletionSummary(BaseModel):
     message_id: int
     session_name: str
+    base_url: str
     created_at: datetime
     question: Optional[str] = None
 
