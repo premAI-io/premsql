@@ -4,6 +4,7 @@ from typing import List, Literal, Optional
 
 from premsql.logger import setup_console_logger
 from premsql.pipelines.models import ExitWorkerOutput
+from premsql.pipelines.utils import convert_exit_output_to_agent_output
 
 logger = setup_console_logger("[PIPELINE-MEMORY]")
 
@@ -81,6 +82,19 @@ class AgentInteractionMemory:
         cursor.execute(query)
         row = cursor.fetchone()
         return row[0] if row else None
+    
+    def generate_messages_from_session(
+            self, session_name: str, limit: int = 100, server_mode: bool=False
+        ):
+        cursor = self.conn.cursor()
+        query = f"SELECT * FROM {session_name} ORDER BY message_id ASC LIMIT {limit}"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            yield self._row_to_exit_worker_output(row=row) if server_mode == False else convert_exit_output_to_agent_output(
+                self._row_to_exit_worker_output(row=row)
+            )
+        
 
     def get_by_message_id(self, message_id: int) -> Optional[dict]:
         cursor = self.conn.cursor()
