@@ -3,7 +3,6 @@ from typing import Optional
 
 from mlx_lm import generate
 from mlx_lm.tokenizer_utils import load_tokenizer
-from mlx_lm.tuner.utils import apply_lora_layers
 from mlx_lm.utils import get_model_path, load_model
 
 from premsql.generators.base import Text2SQLGeneratorBase
@@ -35,9 +34,6 @@ class Text2SQLGeneratorMLX(Text2SQLGeneratorBase):
     def load_client(self):
         model_path = get_model_path(self.model_name_or_path)
         model = load_model(model_path, **self._kwargs)
-        if self._kwargs.get("adapter_path", None) is not None:
-            model = apply_lora_layers(model, self._kwargs["adapter_path"])
-            model.eval()
         return model
 
     @property
