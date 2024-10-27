@@ -4,6 +4,7 @@ import pandas as pd
 
 from premsql.executors.from_langchain import SQLDatabase
 from premsql.logger import setup_console_logger
+from premsql.pipelines.models import AgentOutput, ExitWorkerOutput
 
 logger = setup_console_logger("[PIPELINE-UTILS]")
 
@@ -37,9 +38,43 @@ def _render_data(result, sql: str, using: str) -> Dict[str, Any]:
     if len(table) > 200:
         logger.info("Truncating output table to first 200 rows only")
         table = table.iloc[:200, :]
+    
+    if any(table.columns.duplicated()):
+        logger.info("Removing duplicate columns")
+        table = table.T.drop_duplicates().T
 
     to_show = {"sql_string": sql, "error_from_model": None, "dataframe": table}
 
     if using == "json":
         to_show["dataframe"] = {"data": table.to_dict(), "columns": list(result.keys())}
     return to_show
+
+
+
+def convert_exit_output_to_agent_output(exit_output: ExitWorkerOutput) -> AgentOutput:
+    return AgentOutput(
+        session_name=exit_output.session_name,
+        question=exit_output.question,
+        db_connection_uri=exit_output.db_connection_uri,
+        route_taken=exit_output.route_taken,
+        input_dataframe=exit_output.sql_input_dataframe
+        or exit_output.analysis_input_dataframe
+        or exit_output.plot_input_dataframe,
+        output_dataframe=exit_output.sql_output_dataframe
+        or exit_output.plot_output_dataframe,
+        sql_string=exit_output.sql_string,
+        analysis=exit_output.analysis,
+        reasoning=exit_output.sql_reasoning
+        or exit_output.analysis_reasoning
+        or exit_output.plot_reasoning,
+        plot_config=exit_output.plot_config,
+        image_to_plot=exit_output.image_to_plot,
+        followup_route=exit_output.followup_route_to_take,
+        followup_suggestion=exit_output.followup_suggestion,
+        error_from_pipeline=(
+            exit_output.error_from_sql_worker
+            or exit_output.error_from_analysis_worker
+            or exit_output.error_from_plot_worker
+            or exit_output.error_from_followup_worker
+        ),
+    )
