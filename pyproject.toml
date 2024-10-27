@@ -21,19 +21,28 @@ mysql-connector-python = "^9.0.0"
 SQLAlchemy = "^2.0.30"
 sqlparse = "^0.5.1"
 click = "^8.1.3"
-langchain-community = "0.3.3"
-openai = "1.52.0"
-premai = "0.3.73"
-django = "5.1.2"
-djangorestframework = "3.15.2"
-drf-yasg = "1.21.8"
-func_timeout = "4.3.5"
-matplotlib = "3.9.2"
-pillow = "11.0.0"
-uvicorn = "0.32.0"
+langchain-community = "^0.3.3"
+openai = "^1.52.0"
+premai = "^0.3.73"
+django = "^5.1.2"
+djangorestframework = "^3.15.2"
+drf-yasg = "^1.21.8"
+func_timeout = "^4.3.5"
+matplotlib = "^3.9.2"
+pillow = ">=8,<11"
+uvicorn = "^0.32.0"
+streamlit = "^1.32.0"
+kagglehub = "^0.3.3"
 
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.5"
+[tool.poetry.extras]
+mac = ["mlx", "mlx-lm"]
+
+[tool.poetry.group.mac]
+optional = true
+
+[tool.poetry.group.mac.dependencies]
+mlx = "^0.19.1"
+mlx-lm = "^0.19.2"
 
 [build-system]
 requires = ["poetry-core"]
