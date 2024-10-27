@@ -94,7 +94,6 @@ class AgentInteractionMemory:
             yield self._row_to_exit_worker_output(row=row) if server_mode == False else convert_exit_output_to_agent_output(
                 self._row_to_exit_worker_output(row=row)
             )
-        
 
     def get_by_message_id(self, message_id: int) -> Optional[dict]:
         cursor = self.conn.cursor()
