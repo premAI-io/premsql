@@ -51,11 +51,13 @@ class Text2SQLGeneratorHF(Text2SQLGeneratorBase):
 
     @property
     def load_tokenizer(self) -> transformers.PreTrainedTokenizer:
-        return transformers.AutoTokenizer.from_pretrained(
+        tokenizer = transformers.AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=self.client.config.name_or_path,
             token=self.hf_api_key,
             padding_side="right",
         )
+        tokenizer.pad_token = tokenizer.eos_token
+        return tokenizer
 
     @property
     def model_name_or_path(self):
