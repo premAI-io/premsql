@@ -1,14 +1,18 @@
 import os
 from typing import Optional
 
-from mlx_lm import generate
-from mlx_lm.tokenizer_utils import load_tokenizer
-from mlx_lm.utils import get_model_path, load_model
-
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[MLX-GENERATOR]")
+
+try:
+    from mlx_lm import generate
+    from mlx_lm.tokenizer_utils import load_tokenizer
+    from mlx_lm.utils import get_model_path, load_model
+except ImportError as e:
+    logger.error("Install mlx using: pip install mlx")
+
 
 
 class Text2SQLGeneratorMLX(Text2SQLGeneratorBase):
