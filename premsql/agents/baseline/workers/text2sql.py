@@ -80,45 +80,64 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         fewshot_dict: Optional[dict] = None,
         prompt_template: Optional[str] = BASELINE_TEXT2SQL_WORKER_PROMPT,
     ) -> str:
-        if self.auto_filter_tables:
-            to_include = self.filer_tables_from_schema(
-                question=question, additional_input=additional_knowledge
-            )
-            logger.info(f"Taking the following selected table in schema: {to_include}")
-        else:
-            to_include = None
-            
+        # Initialize database first
         self.db = self.initialize_database(
-            db_connection_uri=self.db_connection_uri, include_tables=to_include
+            db_connection_uri=self.db_connection_uri, include_tables=None
         )
+        
+        # Get tables to include
+        to_include = []
+        if self.auto_filter_tables:
+            try:
+                to_include = self.filer_tables_from_schema(
+                    question=question, additional_input=additional_knowledge
+                )
+                logger.info(f"Selected tables in schema: {to_include}")
+            except Exception as e:
+                logger.warning(f"Error filtering tables: {e}. Using all tables.")
+        
+        # Get schema information
         schema_prompt = self.db.get_context()["table_info"]
+        
+        # Build knowledge prompt
         knowledge_prompt = ""
-        if fewshot_dict is not None:
-            template = dedent(
-                """
-            Question: {question}
-            SQL: {sql}
-            """
-            )
-            knowledge_prompt = "".join(
-                template.format(question=sample_question, sql=sample_sql)
-                for sample_question, sample_sql in fewshot_dict.items()
-            )
+        if fewshot_dict:
+            template = dedent("""
+                Question: {question}
+                SQL: {sql}
+                """)
+            try:
+                knowledge_prompt = "".join(
+                    template.format(question=sample_question, sql=sample_sql)
+                    for sample_question, sample_sql in fewshot_dict.items()
+                )
+            except Exception as e:
+                logger.warning(f"Error formatting fewshot examples: {e}")
+        elif to_include and len(to_include) <= 10:
+            try:
+                self.db._sample_rows_in_table_info = 3
+                knowledge_prompt = str(self.db.get_table_info(table_names=to_include))
+            except Exception as e:
+                logger.warning(f"Error getting table info: {e}")
 
-        if fewshot_dict is None:
-            prompt = BASELINE_TEXT2SQL_WORKER_PROMPT_NO_FEWSHOT.format(
-                schemas=schema_prompt,
-                additional_knowledge=additional_knowledge,
-                question=question,
-            )
-        else:
-            prompt = prompt_template.format(
-                schemas=schema_prompt,
-                additional_knowledge=additional_knowledge,
-                few_shot_examples=knowledge_prompt,
-                question=question,
-            )
-        return prompt
+        try:
+            if fewshot_dict or (to_include and len(to_include) <= 10):
+                prompt = prompt_template.format(
+                    schemas=schema_prompt if fewshot_dict else "",
+                    additional_knowledge=additional_knowledge or "",
+                    few_shot_examples=knowledge_prompt,
+                    question=question,
+                )
+            else:
+                prompt = BASELINE_TEXT2SQL_WORKER_PROMPT_NO_FEWSHOT.format(
+                    schemas=schema_prompt,
+                    additional_knowledge=additional_knowledge or "",
+                    question=question,
+                )
+            return prompt
+        except Exception as e:
+            logger.error(f"Error formatting prompt: {e}")
+            raise
 
     def run(
         self,
@@ -134,6 +153,28 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         ] = BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
         **kwargs,
     ) -> Text2SQLWorkerOutput:
+        if question.startswith("`") and question.endswith("`"):
+            result = execute_and_render_result(
+                db=self.db, sql=question.replace('`', ''), using=render_results_using
+            ) 
+            return Text2SQLWorkerOutput(
+            db_connection_uri=self.db_connection_uri,
+            sql_string=question.startswith("`"),
+            sql_reasoning=None,
+            input_dataframe=None,
+            output_dataframe=result["dataframe"],  # Truncating to
+            question=question,
+            error_from_model=result["error_from_model"],
+            additional_input={
+                "additional_knowledge": additional_knowledge,
+                "fewshot_dict": fewshot_dict,
+                "temperature": temperature,
+                "max_new_tokens": max_new_tokens,
+                **kwargs,
+            },
+        )
+
+
         prompt = self._create_prompt(
             question=question,
             additional_knowledge=additional_knowledge,

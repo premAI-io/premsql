@@ -3,7 +3,6 @@ import os
 import random
 import re
 import sqlite3
-import pandas as pd
 from collections import defaultdict
 from pathlib import Path
 from textwrap import dedent
@@ -16,22 +15,6 @@ from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[UTILS]")
 
-def migrate_from_csv_to_sqlite(folder_containing_csvs: str, sqlite_db_path: str):    
-    conn = sqlite3.connect(sqlite_db_path)
-    try:
-        for csv_file in Path(folder_containing_csvs).glob('*.csv'):
-            table_name = csv_file.stem 
-            df = pd.read_csv(csv_file)
-            df.to_sql(table_name, conn, if_exists='replace', index=False)
-            logger.info(f"Migrated {csv_file.name} to table '{table_name}'")
-            
-        logger.info(f"Successfully migrated all CSV files to {sqlite_db_path}")
-    except Exception as e:
-        logger.error(f"Error during migration: {e}")
-        raise
-    finally:
-        conn.close()
-        
 
 def convert_sqlite_path_to_dsn(path: str):
     sqlite3_pattern = r"^sqlite:\/\/\/.*"

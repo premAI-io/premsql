@@ -54,9 +54,14 @@ class BaseLineFollowupWorker(WorkerBase):
                 None,
             )
 
-        # convert this dict to dataframe
         if dataframe:
-            dataframe = pd.DataFrame(dataframe["data"], columns=dataframe["columns"])
+            if isinstance(dataframe, dict) and "data" in dataframe and "columns" in dataframe:
+                dataframe = pd.DataFrame(dataframe["data"], columns=dataframe["columns"])
+            elif not isinstance(dataframe, pd.DataFrame):
+                try:
+                    dataframe = pd.DataFrame(dataframe)
+                except:
+                    dataframe = None
 
         prompt = prompt_template.format(
             schema=db_schema,

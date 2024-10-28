@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from typing import List, Literal, Optional
+from platformdirs import user_cache_dir
 
 from premsql.logger import setup_console_logger
 from premsql.agents.models import ExitWorkerOutput
@@ -13,8 +14,9 @@ class AgentInteractionMemory:
     def __init__(self, session_name: str, db_path: Optional[str] = None):
         self.session_name = session_name
         self.db_path = db_path or os.path.join(
-            os.getcwd(), "premsql_pipeline_memory.db"
+            user_cache_dir(), "premsql", "premsql_pipeline_memory.db"
         )
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.conn = sqlite3.connect(self.db_path)
         self.create_table_if_not_exists()
 

@@ -27,9 +27,9 @@ def _render_error(error: str, sql: str, using: str) -> Dict[str, Any]:
     to_show = {"sql_string": sql, "error_from_model": error, "dataframe": None}
 
     if using == "dataframe":
-        to_show["dataframe"] = pd.DataFrame([{"error": error}])
+        to_show["dataframe"] = pd.DataFrame()  # empty DataFrame
     elif using == "json":
-        to_show["dataframe"] = {"data": f"Error: {error}", "columns": "ERROR"}
+        to_show["dataframe"] = {"data": {}, "columns": []}  # empty JSON structure
     return to_show
 
 
@@ -40,13 +40,16 @@ def _render_data(result, sql: str, using: str) -> Dict[str, Any]:
         table = table.iloc[:200, :]
     
     if any(table.columns.duplicated()):
-        logger.info("Removing duplicate columns")
-        table = table.T.drop_duplicates().T
+        logger.info(f"Found duplicate columns: {table.columns[table.columns.duplicated()].tolist()}")
+        # Create unique column names by adding suffixes
+        table.columns = [f"{col}_{i}" if i > 0 else col 
+                        for i, col in enumerate(table.columns)]
+        logger.info(f"Renamed columns to: {table.columns.tolist()}")
 
     to_show = {"sql_string": sql, "error_from_model": None, "dataframe": table}
 
     if using == "json":
-        to_show["dataframe"] = {"data": table.to_dict(), "columns": list(result.keys())}
+        to_show["dataframe"] = {"columns": list(table.columns), "data": table.to_dict()}
     return to_show
 
 

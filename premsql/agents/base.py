@@ -91,7 +91,7 @@ class Text2SQLWorkerBase(ABC):
                 database_uri=db_connection_uri,
                 sample_rows_in_table_info=0,
                 ignore_tables=exclude_tables,
-                include_tables=include_tables,
+                include_tables=include_tables
             )
         except Exception as e:
             logger.error(f"Error loading the database: {e}")
