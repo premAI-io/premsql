@@ -16,10 +16,10 @@ def launch():
     """Launch PremSQL services"""
     pass
 
+
 @launch.command(name='all')
 def launch_all():
     """Launch both API server and Streamlit app"""
-    # Launch API server in the background
     premsql_path = Path(__file__).parent.parent.absolute()
     env = os.environ.copy()
     env["PYTHONPATH"] = str(premsql_path)
@@ -30,10 +30,19 @@ def launch_all():
         click.echo(f"Error: manage.py not found at {manage_py_path}", err=True)
         sys.exit(1)
 
+    # Run migrations first
+    click.echo("Running database migrations...")
+    try:
+        subprocess.run([sys.executable, str(manage_py_path), "makemigrations"], env=env, check=True)
+        subprocess.run([sys.executable, str(manage_py_path), "migrate"], env=env, check=True)
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error running migrations: {e}", err=True)
+        sys.exit(1)
+
     click.echo("Starting the PremSQL backend API server...")
     subprocess.Popen([sys.executable, str(manage_py_path), "runserver"], env=env)
 
-    # Launch Streamlit app
+    # Launch the streamlit app
     click.echo("Starting the PremSQL Streamlit app...")
     main_py_path = premsql_path / "premsql" / "playground" / "frontend" / "main.py"
     if not main_py_path.exists():
@@ -57,6 +66,15 @@ def launch_api():
 
     if not manage_py_path.exists():
         click.echo(f"Error: manage.py not found at {manage_py_path}", err=True)
+        sys.exit(1)
+
+    # Run makemigrations
+    click.echo("Running database migrations...")
+    try:
+        subprocess.run([sys.executable, str(manage_py_path), "makemigrations"], env=env, check=True)
+        subprocess.run([sys.executable, str(manage_py_path), "migrate"], env=env, check=True)
+    except subprocess.CalledProcessError as e:
+        click.echo(f"Error running migrations: {e}", err=True)
         sys.exit(1)
 
     click.echo("Starting the PremSQL backend API server...")
