@@ -18,13 +18,14 @@ class SessionComponent:
         with st.sidebar:
             st.sidebar.title("Your Past Sessions")
             all_sessions = self.backend_client.list_sessions(page_size=100).sessions
-            all_sessions = [session.session_name for session in all_sessions]
+            if all_sessions:
+                all_sessions = [session.session_name for session in all_sessions]
 
-            selected_session = st.selectbox(
-                label="Your Sessions (refresh if you have created a new one)",
-                options=all_sessions,
-            )
-            return selected_session
+                selected_session = st.selectbox(
+                    label="Your Sessions (refresh if you have created a new one)",
+                    options=all_sessions,
+                )
+                return selected_session
     
     def render_register_session(self):
         with st.sidebar:
