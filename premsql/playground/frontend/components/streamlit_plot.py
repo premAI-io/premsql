@@ -3,7 +3,7 @@ from typing import Dict, Any
 import pandas as pd
 import streamlit as st 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.tools.plot.base import BasePlotTool
+from premsql.agents.tools.plot.base import BasePlotTool
 
 logger = setup_console_logger("[STREAMLIT-TOOL]")
 
@@ -25,7 +25,7 @@ class StreamlitPlotTool(BasePlotTool):
             x = plot_config["x"]
             y = plot_config["y"]
 
-            st.subheader(f"{plot_type.capitalize()} Plot: {x} vs {y}")
+            st.markdown(f"**{plot_type.capitalize()} Plot: {x} vs {y}**")
             return self.plot_functions[plot_type](data, x, y)
         except Exception as e:
             error_msg = f"Error creating plot: {str(e)}"

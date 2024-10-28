@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 from PIL import Image
 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.tools.plot.base import BasePlotTool
+from premsql.agents.tools.plot.base import BasePlotTool
 
 logger = setup_console_logger("[MATPLOTLIB-TOOL]")
 

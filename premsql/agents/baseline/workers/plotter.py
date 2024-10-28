@@ -4,10 +4,10 @@ import pandas as pd
 
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import ChartPlotWorkerBase, ChartPlotWorkerOutput
-from premsql.pipelines.baseline.prompts import BASELINE_CHART_WORKER_PROMPT_TEMPLATE
-from premsql.pipelines.tools.plot.base import BasePlotTool
-from premsql.pipelines.utils import convert_df_to_dict
+from premsql.agents.base import ChartPlotWorkerBase, ChartPlotWorkerOutput
+from premsql.agents.baseline.prompts import BASELINE_CHART_WORKER_PROMPT_TEMPLATE
+from premsql.agents.tools.plot.base import BasePlotTool
+from premsql.agents.utils import convert_df_to_dict
 
 logger = setup_console_logger("[PLOT-WORKER]")
 

@@ -3,8 +3,8 @@ import sqlite3
 from typing import List, Literal, Optional
 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.models import ExitWorkerOutput
-from premsql.pipelines.utils import convert_exit_output_to_agent_output
+from premsql.agents.models import ExitWorkerOutput
+from premsql.agents.utils import convert_exit_output_to_agent_output
 
 logger = setup_console_logger("[PIPELINE-MEMORY]")
 

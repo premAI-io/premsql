@@ -19,8 +19,8 @@ from django.core.paginator import Paginator
 from django.db import transaction
 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import AgentOutput
-from premsql.pipelines.memory import AgentInteractionMemory
+from premsql.agents.base import AgentOutput
+from premsql.agents.memory import AgentInteractionMemory
 from premsql.playground import InferenceServerAPIClient
 from premsql.playground.backend.api.utils import stop_server_on_port
 

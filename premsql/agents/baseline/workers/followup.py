@@ -4,9 +4,9 @@ import pandas as pd
 
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import WorkerBase
-from premsql.pipelines.baseline.prompts import BASELINE_FOLLOWUP_WORKER_PROMPT
-from premsql.pipelines.models import ExitWorkerOutput, FollowupWorkerOutput
+from premsql.agents.base import WorkerBase
+from premsql.agents.baseline.prompts import BASELINE_FOLLOWUP_WORKER_PROMPT
+from premsql.agents.models import ExitWorkerOutput, FollowupWorkerOutput
 
 logger = setup_console_logger("[BASELINE-FOLLOWUP-WORKER]")
 

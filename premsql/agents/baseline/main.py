@@ -4,15 +4,15 @@ import pandas as pd
 
 from premsql.executors.base import BaseExecutor
 from premsql.generators.base import Text2SQLGeneratorBase
-from premsql.pipelines.base import AgentBase, ExitWorkerOutput
-from premsql.pipelines.baseline.workers import (
+from premsql.agents.base import AgentBase, ExitWorkerOutput
+from premsql.agents.baseline.workers import (
     BaseLineAnalyserWorker,
     BaseLineFollowupWorker,
     BaseLinePlotWorker,
     BaseLineText2SQLWorker,
 )
-from premsql.pipelines.router import SimpleRouterWorker
-from premsql.pipelines.tools.plot.base import BasePlotTool
+from premsql.agents.router import SimpleRouterWorker
+from premsql.agents.tools.plot.base import BasePlotTool
 
 # TODO: Should the name be changed from baseline to eda or autoeda?
 
@@ -30,7 +30,7 @@ class BaseLineAgent(AgentBase):
         include_tables: Optional[list] = None,
         exclude_tables: Optional[list] = None,
         auto_filter_tables: Optional[bool] = False,
-        route_worker_kwargs: Optional[dict] = None,
+        route_worker_kwargs: Optional[dict] = {},
     ) -> None:
         super().__init__(
             session_name=session_name,

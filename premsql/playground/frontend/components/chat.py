@@ -4,9 +4,9 @@ from premsql.playground.backend.backend_client import BackendAPIClient
 from premsql.playground.inference_server.api_client import InferenceServerAPIClient
 from premsql.playground.backend.api.pydantic_models import CompletionCreationRequest
 from premsql.playground.frontend.components.streamlit_plot import StreamlitPlotTool
-from premsql.pipelines.memory import AgentInteractionMemory
-from premsql.pipelines.utils import convert_exit_output_to_agent_output
-from premsql.pipelines.models import ExitWorkerOutput, AgentOutput
+from premsql.agents.memory import AgentInteractionMemory
+from premsql.agents.utils import convert_exit_output_to_agent_output
+from premsql.agents.models import ExitWorkerOutput, AgentOutput
 
 
 class ChatComponent:
@@ -39,7 +39,7 @@ class ChatComponent:
                 )
         if message.followup_suggestion:
             st.warning(message.followup_suggestion)
-        with st.expander(label="Meta data"):
+        with st.expander(label="Reasoning"):
             if message.sql_string:
                 st.code(message.sql_string) 
             if message.reasoning:
@@ -80,7 +80,7 @@ class ChatComponent:
         is_session_online_status = self.inference_client.is_online(base_url=base_url)
         if is_session_online_status != 200:
             st.divider()
-            st.warning("Session ended. Restart Agent Server to start the session")
+            st.warning(f"Session ended. Restart Agent Server to start the session at: {base_url}")
         
         else:
             if prompt := st.chat_input("What is your question?"):

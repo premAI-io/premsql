@@ -4,7 +4,7 @@ import pandas as pd
 
 from premsql.executors.from_langchain import SQLDatabase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.models import AgentOutput, ExitWorkerOutput
+from premsql.agents.models import AgentOutput, ExitWorkerOutput
 
 logger = setup_console_logger("[PIPELINE-UTILS]")
 

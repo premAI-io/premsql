@@ -3,8 +3,8 @@ from typing import Optional
 import pandas as pd
 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import RouterWorkerBase, RouterWorkerOutput
-from premsql.pipelines.utils import convert_df_to_dict
+from premsql.agents.base import RouterWorkerBase, RouterWorkerOutput
+from premsql.agents.utils import convert_df_to_dict
 
 logger = setup_console_logger("[BASELINE-ROUTER]")
 

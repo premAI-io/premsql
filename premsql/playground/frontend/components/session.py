@@ -19,6 +19,7 @@ class SessionComponent:
             st.sidebar.title("Your Past Sessions")
             all_sessions = self.backend_client.list_sessions(page_size=100).sessions
             all_sessions = [session.session_name for session in all_sessions]
+
             selected_session = st.selectbox(
                 label="Your Sessions (refresh if you have created a new one)",
                 options=all_sessions,
@@ -53,3 +54,19 @@ class SessionComponent:
         with st.sidebar:
             with st.container(height=200):
                 st.markdown(additional_link_markdown)
+
+    
+    def render_delete_session_view(self):
+        with st.sidebar:
+            with st.expander(label="Delete a session"):
+                with st.form(key="delete_session", clear_on_submit=True, enter_to_submit=False):
+                    session_name = st.text_input(label="Enter session name")
+                    button = st.form_submit_button(label="Submit")
+                    if button:
+                        all_sessions = self.backend_client.list_sessions(page_size=100).sessions
+                        all_sessions = [session.session_name for session in all_sessions]
+                        if session_name not in all_sessions:
+                            st.error("Session does not exist")
+                        else:
+                            self.backend_client.delete_session(session_name=session_name)
+                            st.success(f"Deleted session: {session_name}. Please refresh")

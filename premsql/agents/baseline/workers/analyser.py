@@ -5,12 +5,12 @@ from tqdm.auto import tqdm
 
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import AnalyserWorkerOutput, AnalysisWorkerBase
-from premsql.pipelines.baseline.prompts import (
+from premsql.agents.base import AnalyserWorkerOutput, AnalysisWorkerBase
+from premsql.agents.baseline.prompts import (
     BASELINE_ANALYSIS_MERGER_PROMPT,
     BASELINE_ANALYSIS_WORKER_PROMPT,
 )
-from premsql.pipelines.utils import convert_df_to_dict
+from premsql.agents.utils import convert_df_to_dict
 
 logger = setup_console_logger("[BASELINE-ANALYSER-WORKER]")
 
@@ -65,7 +65,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
             if verbose:
                 logger.info(
                     CHUNK_TEMPLATE.format(
-                        analysis=analysis["analyse"],
+                        analysis=analysis["analysis"],
                         reasoning=analysis["analysis_reasoning"],
                     )
                 )
@@ -73,7 +73,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
 
         analysis_list_str = "\n".join(
             [
-                analysis["analyse"] + " " + analysis["analysis_reasoning"]
+                analysis["analysis"] + " " + analysis["analysis_reasoning"]
                 for analysis in analysis_list
             ]
         )
@@ -88,14 +88,14 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
                 postprocess=False,
             )
             analysis = {
-                "analyse": summary,
+                "analysis": summary,
                 "analysis_reasoning": "Analysis summarised by AI",
             }
             error_from_model = None
 
         else:
             analysis = {
-                "analyse": "\n".join(
+                "analysis": "\n".join(
                     [
                         content["analyse"] if "analyse" in content else ""
                         for content in analysis_list
@@ -131,10 +131,15 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
             error_from_model = None
         except Exception as e:
             analysis = {
-                "analyse": "Not able to analyse, Try again",
+                "analysis": "Not able to analyse, Try again",
                 "analysis_reasoning": None,
             }
             error_from_model = str(e)
+
+        logger.info(analysis)
+        logger.info("------------")
+        logger.info(error_from_model)
+
         return analysis, error_from_model
 
     def run(
@@ -178,7 +183,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
         return AnalyserWorkerOutput(
             question=question,
             input_dataframe=convert_df_to_dict(df=input_dataframe),
-            analysis=analysis.get("analyse", None),
+            analysis=analysis.get("analysis", "Not able to analyse"),
             analysis_reasoning=analysis.get("analysis_reasoning", None),
             error_from_model=error_from_model,
             additional_input={

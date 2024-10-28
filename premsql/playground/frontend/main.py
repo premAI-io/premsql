@@ -30,6 +30,8 @@ def main():
     elif selected_session is not None:
         ChatComponent().render_chat_env(session_name=selected_session)
     
+    session_component.render_delete_session_view()
+    
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-from premsql.pipelines.baseline.workers import (
+from premsql.agents.baseline.workers import (
     BaseLineAnalyserWorker,
     BaseLineFollowupWorker,
     BaseLinePlotWorker,

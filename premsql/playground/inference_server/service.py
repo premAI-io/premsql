@@ -1,3 +1,5 @@
+import traceback
+
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Optional
@@ -8,7 +10,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import AgentBase, AgentOutput
+from premsql.agents.base import AgentBase, AgentOutput
 
 logger = setup_console_logger("[FASTAPI-INFERENCE-SERVICE]")
 
@@ -77,6 +79,8 @@ class AgentServer:
                     message=AgentOutput(**result.model_dump()), message_id=message_id
                 )
             except Exception as e:
+                stack_trace = traceback.format_exc()
+                logger.error(stack_trace)
                 logger.error(f"Error processing query: {str(e)}")
                 raise HTTPException(
                     status_code=500, detail=f"Error processing query: {str(e)}"

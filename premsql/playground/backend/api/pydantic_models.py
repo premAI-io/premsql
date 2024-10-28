@@ -3,7 +3,7 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from premsql.pipelines.models import AgentOutput
+from premsql.agents.models import AgentOutput
 
 # All the Session Models
 

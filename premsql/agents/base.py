@@ -7,8 +7,8 @@ from premsql.executors.base import BaseExecutor
 from premsql.executors.from_langchain import SQLDatabase
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.memory import AgentInteractionMemory
-from premsql.pipelines.models import (
+from premsql.agents.memory import AgentInteractionMemory
+from premsql.agents.models import (
     AgentOutput,
     AnalyserWorkerOutput,
     ChartPlotWorkerOutput,

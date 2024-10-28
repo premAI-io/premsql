@@ -4,15 +4,15 @@ from typing import Literal, Optional
 from premsql.executors.base import BaseExecutor
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-from premsql.pipelines.base import Text2SQLWorkerBase
-from premsql.pipelines.baseline.prompts import (
+from premsql.agents.base import Text2SQLWorkerBase
+from premsql.agents.baseline.prompts import (
     BASELINE_TEXT2SQL_TABLE_SELECTION_PROMPT,
     BASELINE_TEXT2SQL_WORKER_ERROR_HANDLING_PROMPT,
     BASELINE_TEXT2SQL_WORKER_PROMPT,
     BASELINE_TEXT2SQL_WORKER_PROMPT_NO_FEWSHOT,
 )
-from premsql.pipelines.models import Text2SQLWorkerOutput
-from premsql.pipelines.utils import execute_and_render_result
+from premsql.agents.models import Text2SQLWorkerOutput
+from premsql.agents.utils import execute_and_render_result
 
 logger = setup_console_logger("[BASELINE-TEXT2SQL-WORKER]")
 
@@ -80,10 +80,14 @@ class BaseLineText2SQLWorker(Text2SQLWorkerBase):
         fewshot_dict: Optional[dict] = None,
         prompt_template: Optional[str] = BASELINE_TEXT2SQL_WORKER_PROMPT,
     ) -> str:
-        to_include = self.filer_tables_from_schema(
-            question=question, additional_input=additional_knowledge
-        )
-        logger.info(f"Taking the following selected table in schema: {to_include}")
+        if self.auto_filter_tables:
+            to_include = self.filer_tables_from_schema(
+                question=question, additional_input=additional_knowledge
+            )
+            logger.info(f"Taking the following selected table in schema: {to_include}")
+        else:
+            to_include = None
+            
         self.db = self.initialize_database(
             db_connection_uri=self.db_connection_uri, include_tables=to_include
         )
