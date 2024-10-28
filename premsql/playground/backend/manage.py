@@ -9,6 +9,14 @@ def main():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
     try:
         from django.core.management import execute_from_command_line
+        import django
+        # Patch Django's CommandParser before executing command
+        from django.core.management.base import CommandParser
+        original_init = CommandParser.__init__
+        def new_init(self, **kwargs):
+            kwargs.pop('allow_abbrev', None)  # Remove allow_abbrev if present
+            original_init(self, **kwargs)
+        CommandParser.__init__ = new_init
     except ImportError as exc:
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "

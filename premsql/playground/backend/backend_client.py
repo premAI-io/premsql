@@ -31,6 +31,7 @@ class BackendAPIClient:
                 headers=self.headers
             )
             response.raise_for_status()  # Raises an HTTPError for bad responses
+            
             return SessionCreationResponse(**response.json())
         except requests.RequestException as e:
             logger.error(f"Error creating session: {str(e)}")
