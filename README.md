@@ -5,7 +5,12 @@ PremSQL is an open-source library designed to help developers create secure, ful
 
 ![alt architecture](/assets/architecture.png)
 
-## New: We release PremSQL Agents and PremSQL Playground and PremSQL API. Watch it in action
+## New: PremSQL Playground, Agents and API
+We just rleased the latest version of PremSQL. It comes with the following:
+
+- **PremSQL Agents:** Using PremSQL agents you can make analysis, plot charts and query to databases all using Natural Language. For now it comes with a baseline level agent. Using our library you can customize agents and build on top of it.
+- **PremSQL API**: A self hosted API which can then be used using any language to make requests to use the agents.
+- **PremSQL Playground**: Our own playground UI (self hosted) which you can use interact with Text to SQL agents for your analysis tasks. You can also test your customized agents using this playground as well. Watch it in action.
 
 https://github.com/user-attachments/assets/2bd77a2c-6b6b-4442-8157-f93c53ec8c19
 
