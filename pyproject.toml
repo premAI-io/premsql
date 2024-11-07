@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "premsql"
-version = "0.1.10"
+version = "0.1.11"
 description = ""
 authors = ["Anindyadeep <proanindyadeep@gmail.com>"]
 readme = "README.md"
