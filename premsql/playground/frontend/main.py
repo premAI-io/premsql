@@ -27,7 +27,7 @@ def main():
     with col2:
         st.image(
             "https://static.premai.io/logo.svg",
-            use_column_width=True,
+            use_container_width=True,
             width=150,
             clamp=True,
         )

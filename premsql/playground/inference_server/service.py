@@ -6,7 +6,6 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from premsql.logger import setup_console_logger
@@ -42,7 +41,7 @@ class AgentServer:
     def __init__(
         self,
         agent: AgentBase,
-        url: Optional[str] = "0.0.0.0",
+        url: Optional[str] = "localhost",
         port: Optional[int] = 8100,
     ) -> None:
         self.agent = agent
@@ -110,6 +109,13 @@ class AgentServer:
                 raise HTTPException(
                     status_code=500, detail=f"Error retrieving chat history: {str(e)}"
                 )
+
+        @app.get("/")
+        async def health_check():
+            return {
+                "status_code": 200, 
+                "status": f"healthy, running: {self.agent.session_name}"
+            }
 
         @app.get("/health")
         async def health_check():

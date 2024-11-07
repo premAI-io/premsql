@@ -75,7 +75,7 @@ text2sql_model = Text2SQLGeneratorPremAI(
 )
 
 analyser_plotter_model = Text2SQLGeneratorPremAI(
-    model_name="gpt-4o", experiment_name="text2sql_model", type="test",
+    model_name="gpt-4o", experiment_name="analyser_plotter_model", type="test",
     premai_api_key=os.environ.get("PREMAI_API_KEY"),
     project_id=os.environ.get("PREMAI_PROJECT_ID")
 )
@@ -94,12 +94,12 @@ load_dotenv()
 
 text2sql_model = Text2SQLGeneratorOpenAI(
     model_name="gpt-4o", experiment_name="text2sql_model", type="test",
-    openai_api_key=os.environ.get("OPENAI_API_KEY"),
+    openai_api_key=os.environ.get("OPENAI_API_KEY")
 )
 
 analyser_plotter_model = Text2SQLGeneratorOpenAI(
-    model_name="gpt-4o", experiment_name="text2sql_model", type="test",
-    openai_api_key=os.environ.get("OPENAI_API_KEY"),
+    model_name="gpt-4o", experiment_name="analyser_and_plotter_model", type="test",
+    openai_api_key=os.environ.get("OPENAI_API_KEY")
 )
 """
 
