@@ -130,7 +130,7 @@ def render_starter_code(session_name, db_path):
         st.code(code, language="python")
 
     with st.expander(label="Start with OpenAI"):
-        code = (STARTER_CODE_FILE_PREMAI + COMMON).format(
+        code = (STARTER_CODE_FILE_OPENAI + COMMON).format(
             session_name=session_name, 
             db_path=db_path,
             port=random.choice(range(7000, 9000))
