@@ -14,13 +14,11 @@ We just rleased the latest version of PremSQL. It comes with the following:
 - **PremSQL API**: A self hosted API which can then be used using any language to make requests to use the deployed agents.
 - **PremSQL Playground**: A playground UI (self hosted) which you can use interact with Text to SQL agents for your analysis tasks. You can also test your customized agents using this playground as well. Watch it in action.
 
-> [!NOTE]
-> PremSQL Playground might be buggy on windows and Ollama support coming soon!
-
 https://github.com/user-attachments/assets/2bd77a2c-6b6b-4442-8157-f93c53ec8c19
 
 ## News and blogs
 
+- [Nov 7th 2024] Release of [Prem-1B-SQL Ollama](https://ollama.com/anindya/prem1b-sql-ollama-fp116) and Ollama support.
 - [Nov 5th 2024] Release of PremSQL agents, AgentServer and Playground
 - [Oct 30th] Prem-1B-SQL crossed 5K + downloads on Huggingface
 - [Sep 20th 2024] First release of [Prem-1B-SQL](https://huggingface.co/premai-io/prem-1B-SQL) (51.54% on BirdBench private dataset) | [Blog post](https://blog.premai.io/prem-1b-sql-fully-local-performant-slm-for-text-to-sql/)
@@ -31,6 +29,7 @@ https://github.com/user-attachments/assets/2bd77a2c-6b6b-4442-8157-f93c53ec8c19
 ## 🚀 Features
 
 - **Local-First**: Avoid third-party closed-source providers and keep your data secure.
+- **Multiple connectors**: Supports [PremAI](https://app.premai.io/projects/), [Ollama](https://ollama.com/), [HuggingFace](https://huggingface.co/), [Apple MLX](https://huggingface.co/), [OpenAI](https://openai.com/).
 - **Customizable Datasets**: Create, fine-tune, and evaluate models with built-in or custom datasets.
 - **Robust Executors and Evaluators**: Easily connect to databases and assess model performance.
 - **Advanced Generators**: Convert natural language prompts into executable SQL queries.
