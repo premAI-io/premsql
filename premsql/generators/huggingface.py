@@ -1,19 +1,22 @@
 import os
 from typing import Optional, Union
 
-import torch
-import transformers
-
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[HF-GENERATOR]")
 
+try:
+    import torch
+    import transformers
+except ImportError:
+    logger.warn("Ensure torch and transformers are installed.")
+    logger.warn("Install them by: pip install torch transformers")
 
 class Text2SQLGeneratorHF(Text2SQLGeneratorBase):
     def __init__(
         self,
-        model_or_name_or_path: Union[str, transformers.PreTrainedModel],
+        model_or_name_or_path: Union[str, "transformers.PreTrainedModel"],
         experiment_name: str,
         type: str,
         experiment_folder: Optional[str] = None,
@@ -36,7 +39,7 @@ class Text2SQLGeneratorHF(Text2SQLGeneratorBase):
         )
 
     @property
-    def load_client(self) -> transformers.PreTrainedModel:
+    def load_client(self) -> "transformers.PreTrainedModel":
         if isinstance(self.model_or_name_or_path, str):
             return transformers.AutoModelForCausalLM.from_pretrained(
                 pretrained_model_name_or_path=self.model_or_name_or_path,
@@ -50,7 +53,7 @@ class Text2SQLGeneratorHF(Text2SQLGeneratorBase):
         return self.model_or_name_or_path
 
     @property
-    def load_tokenizer(self) -> transformers.PreTrainedTokenizer:
+    def load_tokenizer(self) -> "transformers.PreTrainedTokenizer":
         tokenizer = transformers.AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=self.client.config.name_or_path,
             token=self.hf_api_key,

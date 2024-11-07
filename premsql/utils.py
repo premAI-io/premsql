@@ -9,11 +9,14 @@ from textwrap import dedent
 from typing import Optional, Sequence, Union
 
 from tqdm.auto import tqdm
-from transformers import PreTrainedTokenizer
-
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger(name="[UTILS]")
+
+try:
+    from transformers import PreTrainedTokenizer
+except ImportError:
+    logger.warn("Unable to use transformers. Install using: pip install transformers")
 
 
 def convert_sqlite_path_to_dsn(path: str):
@@ -153,7 +156,7 @@ def filter_options(
     return filtered_data
 
 
-def tokenize_fn(strings: Sequence[str], tokenizer: PreTrainedTokenizer) -> dict:
+def tokenize_fn(strings: Sequence[str], tokenizer: "PreTrainedTokenizer") -> dict:
     """Tokenizes a list of string"""
     tokenized_list = [
         tokenizer(

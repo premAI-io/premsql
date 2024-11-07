@@ -11,7 +11,7 @@ try:
     from mlx_lm.tokenizer_utils import load_tokenizer
     from mlx_lm.utils import get_model_path, load_model
 except ImportError as e:
-    logger.error("Install mlx using: pip install mlx")
+    logger.error("Install mlx using: pip install mlx mlx-lm")
 
 
 

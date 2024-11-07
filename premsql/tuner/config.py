@@ -1,8 +1,14 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
+from premsql.logger import setup_console_logger
 
-from peft import LoraConfig, TaskType
-from transformers import TrainingArguments
+logger = setup_console_logger("[TUNER-CONFIG]")
+
+try:
+    from peft import LoraConfig, TaskType
+    from transformers import TrainingArguments
+except ImportError:
+    logger.warn("Unable to find peft and transformers. Install: pip install peft transformers")
 
 
 @dataclass

@@ -1,11 +1,5 @@
 from typing import Optional, Sequence
 
-import torch
-import transformers
-from peft import LoraConfig
-from transformers import BitsAndBytesConfig
-from trl import SFTTrainer
-
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.datasets.collator import DataCollatorForSupervisedDataset
 from premsql.evaluator.base import BaseExecutor
@@ -14,6 +8,16 @@ from premsql.tuner.callback import Text2SQLEvaluationCallback
 from premsql.tuner.config import DefaultLoraConfig, DefaultPeftArguments
 
 logger = setup_console_logger("[LORA-FINETUNE]")
+
+try:
+    import torch
+    import transformers
+    from peft import LoraConfig
+    from transformers import BitsAndBytesConfig
+    from trl import SFTTrainer
+except ImportError:
+    logger.warn("Ensure torch transformers peft and trl are installed.")
+    logger.warn("Install them by: pip install torch peft trl transformers")
 
 
 class Text2SQLPeftTuner:
