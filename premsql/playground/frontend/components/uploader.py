@@ -41,6 +41,27 @@ analyser_plotter_model = Text2SQLGeneratorMLX(
 """
 
 
+STARTER_CODE_FILE_OLLAMA = """
+from premsql.playground import AgentServer
+from premsql.agents import BaseLineAgent
+from premsql.generators import Text2SQLGeneratorOllama
+from premsql.agents.tools import SimpleMatplotlibTool
+from premsql.executors import ExecutorUsingLangChain
+
+text2sql_model = Text2SQLGeneratorOllama(
+    model_name="anindya/prem1b-sql-ollama-fp116",
+    experiment_name="ollama",
+    type="test"
+)
+
+analyser_plotter_model = Text2SQLGeneratorOllama(
+    model_name="llama3.2:1b",
+    experiment_name="ollama",
+    type="test"
+)
+"""
+
+
 STARTER_CODE_FILE_HF = """
 from premsql.playground import AgentServer
 from premsql.agents import BaseLineAgent
@@ -103,9 +124,11 @@ analyser_plotter_model = Text2SQLGeneratorOpenAI(
 )
 """
 
-
 def render_starter_code(session_name, db_path):
     with st.expander(label="Start Locally with MLX", expanded=True):
+        st.warning("Ensure you have mlx installed and using inside mac device.")
+        st.info("Python PyPI: pip install mlx mlx-lm")
+
         code = (STARTER_CODE_FILE_MLX + COMMON).format(
             session_name=session_name, 
             db_path=db_path,
@@ -114,7 +137,22 @@ def render_starter_code(session_name, db_path):
         st.code(code, language="python")
     
     with st.expander(label="Start Locally with HuggingFace"):
+        st.warning("Ensure you have torch, transformers installed inside your device.")
+        st.info("Python PyPI: pip install torch transformers")
+
         code = (STARTER_CODE_FILE_HF + COMMON).format(
+            session_name=session_name, 
+            db_path=db_path,
+            port=random.choice(range(7000, 9000))
+        )
+        st.code(code, language="python")
+
+    with st.expander(label="Start Locally with Ollama"):
+        st.warning("Ensure you have ollama installed inside your device.")
+        st.info("Python PyPI: pip install ollama")
+        st.info("Install Ollama: curl -fsSL https://ollama.com/install.sh | sh")
+
+        code = (STARTER_CODE_FILE_OLLAMA + COMMON).format(
             session_name=session_name, 
             db_path=db_path,
             port=random.choice(range(7000, 9000))
