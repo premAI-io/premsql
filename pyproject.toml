@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "premsql"
-version = "0.2.1"
+version = "0.2.5"
 description = ""
 authors = ["Anindyadeep <proanindyadeep@gmail.com>"]
 readme = "README.md"
@@ -14,9 +14,7 @@ fastapi = "^0.112.0"
 huggingface-hub = "^0.24.5"
 isort = "^5.13.2"
 numpy = "^1.26.3"
-torch = "^2.4.0"
 tqdm = "^4.66.4"
-transformers = "^4.43.3"
 mysql-connector-python = "^9.0.0"
 SQLAlchemy = "^2.0.30"
 sqlparse = "^0.5.1"
@@ -43,6 +41,14 @@ optional = true
 [tool.poetry.group.mac.dependencies]
 mlx = "^0.19.1"
 mlx-lm = "^0.19.2"
+
+[tool.poetry.group.linux.dependencies]
+transformers = "^4.43.3"
+torch = "^2.4.0"
+
+[tool.poetry.group.windows.dependencies]
+transformers = "^4.43.3"
+torch = "^2.4.0"
 
 [build-system]
 requires = ["poetry-core"]
