@@ -6,9 +6,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Optional, Sequence, Union
 
-import torch
 from tqdm.auto import tqdm
-from transformers import AutoTokenizer
 
 from premsql.logger import setup_console_logger
 from premsql.prompts import BASE_TEXT2SQL_PROMPT
@@ -20,6 +18,13 @@ from premsql.utils import (
 )
 
 logger = setup_console_logger(name="[DATASET]")
+
+try:
+    import torch
+    from transformers import AutoTokenizer
+except ImportError:
+    logger.warn("Ensure transformers and torch. Install using: pip install torch transformers")
+
 
 IGNORE_INDEX = -100
 
