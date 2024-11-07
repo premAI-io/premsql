@@ -59,8 +59,6 @@ class ChatComponent:
         if session_info.status_code == 500:
             st.error(f"Failed to render chat History for session: {session_name}")
 
-        logger.info(session_info)
-
         session = session_info.sessions[0]
         session_db_path = session.session_db_path
         base_url = session.base_url
