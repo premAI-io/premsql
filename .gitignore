@@ -2,6 +2,8 @@ data
 experiments
 output
 test.py
+exps
+
 
 # Python specific
 *.pyc
