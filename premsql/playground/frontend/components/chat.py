@@ -7,7 +7,9 @@ from premsql.playground.frontend.components.streamlit_plot import StreamlitPlotT
 from premsql.agents.memory import AgentInteractionMemory
 from premsql.agents.utils import convert_exit_output_to_agent_output
 from premsql.agents.models import ExitWorkerOutput, AgentOutput
+from premsql.logger import setup_console_logger
 
+logger = setup_console_logger("FRONTEND-CHAT")
 
 class ChatComponent:
     def __init__(self) -> None:
@@ -56,6 +58,8 @@ class ChatComponent:
         )
         if session_info.status_code == 500:
             st.error(f"Failed to render chat History for session: {session_name}")
+
+        logger.info(session_info)
 
         session = session_info.sessions[0]
         session_db_path = session.session_db_path
