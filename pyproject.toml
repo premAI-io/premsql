@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "text2sql"
-version = "0.1.0"
+name = "premsql"
+version = "0.1.11"
 description = ""
 authors = ["Anindyadeep <proanindyadeep@gmail.com>"]
 readme = "README.md"
@@ -14,13 +14,45 @@ fastapi = "^0.112.0"
 huggingface-hub = "^0.24.5"
 isort = "^5.13.2"
 numpy = "^1.26.3"
-torch = "^2.4.0"
 tqdm = "^4.66.4"
-transformers = "^4.43.3"
 mysql-connector-python = "^9.0.0"
 SQLAlchemy = "^2.0.30"
 sqlparse = "^0.5.1"
+click = "^8.1.3"
+langchain-community = "^0.3.3"
+openai = "^1.52.0"
+premai = "^0.3.73"
+django = "^5.1.2"
+djangorestframework = "^3.15.2"
+drf-yasg = "^1.21.8"
+func_timeout = "^4.3.5"
+matplotlib = "^3.9.2"
+pillow = ">=8,<11"
+uvicorn = "^0.32.0"
+streamlit = "^1.40.0"
+kagglehub = "^0.3.3"
+
+[tool.poetry.extras]
+mac = ["mlx", "mlx-lm"]
+
+[tool.poetry.group.mac]
+optional = true
+
+[tool.poetry.group.mac.dependencies]
+mlx = "^0.19.1"
+mlx-lm = "^0.19.2"
+
+[tool.poetry.group.linux.dependencies]
+transformers = "^4.43.3"
+torch = "^2.4.0"
+
+[tool.poetry.group.windows.dependencies]
+transformers = "^4.43.3"
+torch = "^2.4.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+premsql = "premsql.cli:cli"

@@ -1,13 +1,19 @@
 from dataclasses import dataclass
 from typing import Sequence
+from premsql.logger import setup_console_logger
 
-import torch
-import transformers
+logger = setup_console_logger("[DATASET-COLLATOR]")
 
+try:
+    import torch
+    import transformers
+except ImportError:
+    logger.warn("Ensure torch and transformers are installed.")
+    logger.warn("Install them by: pip install torch transformers")
 
 @dataclass
 class DataCollatorForSupervisedDataset:
-    tokenizer: transformers.PreTrainedTokenizer
+    tokenizer: "transformers.PreTrainedTokenizer"
 
     def __call__(self, instances: Sequence[dict]) -> dict[str, torch.Tensor]:
         input_ids, labels = tuple(

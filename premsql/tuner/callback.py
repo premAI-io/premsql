@@ -1,21 +1,24 @@
 import os
 from typing import Optional
 
-from torch.utils.tensorboard import SummaryWriter
-from transformers import (
-    Trainer,
-    TrainerCallback,
-    TrainerControl,
-    TrainerState,
-    TrainingArguments,
-)
-
 from premsql.datasets.base import Text2SQLBaseDataset
 from premsql.evaluator.base import BaseExecutor, Text2SQLEvaluator
 from premsql.generators.huggingface import Text2SQLGeneratorHF
 from premsql.logger import setup_console_logger
 
 logger = setup_console_logger("[EVALUATION-CALLBACK]")
+
+try:
+    from torch.utils.tensorboard import SummaryWriter
+    from transformers import (
+        Trainer,
+        TrainerCallback,
+        TrainerControl,
+        TrainerState,
+        TrainingArguments,
+    )
+except ImportError:
+    logger.warn("Unable to import torch and transformers. Install: pip install torch transformers")
 
 
 class Text2SQLEvaluationCallback(TrainerCallback):

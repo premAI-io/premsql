@@ -6,6 +6,7 @@ from typing import Optional
 
 import sqlparse
 from tqdm.auto import tqdm
+from platformdirs import user_cache_dir
 
 from premsql.evaluator.base import BaseExecutor
 from premsql.logger import setup_console_logger
@@ -21,7 +22,7 @@ class Text2SQLGeneratorBase(ABC):
         self.experiment_folder = (
             Path(experiment_folder)
             if experiment_folder is not None
-            else Path("./experiments")
+            else Path(user_cache_dir()) / "premsql" / "experiments"
         )
 
         self.experiment_path = Path(self.experiment_folder) / type / experiment_name
