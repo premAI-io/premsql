@@ -181,12 +181,11 @@ without introducing new errors.
 # --------------------------------- analysis base --------------------------------- #
 
 BASELINE_ANALYSIS_WORKER_PROMPT = """
-### Instruction: Respond only with valid JSON. No introduction or summary needed. You will receive a user question and a table. Do not add ``` at start / end of the output. Analyze the table and provide your analysis in JSON format using the structure below:
+### Instruction: You will receive a user question and a table. Do not add ``` at start / end of the output. 
+Analyze the table and provide your analysis following the below structure
 
-{{
-    "analysis": "Your analysis based on the user's question",
-    "analysis_reasoning": "Reasoning behind your analysis, or null if unnecessary"
-}}
+# Analysis: (This should contain the answer from user's question)
+# Reasoning: (This should contain the reasoning behind the your answer or analysis)
 
 Example 1:
 
@@ -199,10 +198,10 @@ table:
 
 User Question: Which country has the highest GDP per capita?
 Output:
-{{
-    "analysis": "Country A has the highest GDP per capita.",
-    "analysis_reasoning": "Country A's GDP per capita is 10,000, higher than B (10,000) and C (5,000)."
-}}
+
+# Analysis: Country A has the highest GDP per capita.
+# Reasoning: Country A's GDP per capita is 10,000, higher than B (10,000) and C (5,000).
+
 
 Example 2:
 
@@ -218,21 +217,15 @@ table:
 
 User Question: Which product had the highest profit margin in February?
 Output:
-{{
-    "analysis": "Product A had the highest profit margin in February.",
-    "analysis_reasoning": "Product A had a profit margin of 22% compared to Product B's 18% in February."
-}}
+
+# Analysis: Product A had the highest profit margin in February.
+# Reasoning: Product A had a profit margin of 22% compared to Product B's 18% in February.
+
 
 ------ Assistant's turn ------
 
 Dataframe to analyse: {dataframe}
 user question: {question}
-
-NOTE: Only read the user question and dataframe above and give the analysis and reasoning
-in JSON format only. Nothing else. Respond only with valid JSON.
-
-Your JSON keys should be only: `analysis` and `analysis_reasoning`
-Respond only with valid JSON. Do not write an introduction or summary. output:
 """
 
 # --------------------------------- analysis merger --------------------------------- #
