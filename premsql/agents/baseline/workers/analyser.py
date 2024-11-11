@@ -115,7 +115,7 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
         max_new_tokens: Optional[int] = 512,
         prompt_template: Optional[str] = BASELINE_ANALYSIS_WORKER_PROMPT,
     ) -> dict:
-        analysis = self.generator.generate(
+        output = self.generator.generate(
             data_blob={
                 "prompt": prompt_template.format(
                     dataframe=str(input_dataframe), question=question
@@ -126,13 +126,23 @@ class BaseLineAnalyserWorker(AnalysisWorkerBase):
             postprocess=False,
         )
         try:
-            analysis = analysis.replace("null", "None")
-            analysis = eval(analysis)
+            sections = output.split('# ')
+            analysis_from_model, reasoning_from_model = '', ''
+            for section in sections:
+                if section.startswith('Analysis:'):
+                    analysis_from_model = section.strip()
+                elif section.startswith('Reasoning:'):
+                    reasoning_from_model = section.strip()
+            
+            analysis = {
+                "analysis": analysis_from_model,
+                "analysis_reasoning": reasoning_from_model
+            }
             error_from_model = None
         except Exception as e:
             analysis = {
-                "analysis": "Not able to analyse, Try again",
-                "analysis_reasoning": None,
+                "analysis": output,
+                "analysis_reasoning": "Not able to split analysis and reasoning",
             }
             error_from_model = str(e)
 
