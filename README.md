@@ -14,7 +14,7 @@ We just rleased the latest version of PremSQL. It comes with the following:
 - **PremSQL API**: A self hosted API which can then be used using any language to make requests to use the deployed agents.
 - **PremSQL Playground**: A playground UI (self hosted) which you can use interact with Text to SQL agents for your analysis tasks. You can also test your customized agents using this playground as well. Watch it in action.
 
-https://github.com/user-attachments/assets/2bd77a2c-6b6b-4442-8157-f93c53ec8c19
+https://github.com/user-attachments/assets/b6db9737-cd42-4848-8a44-f23a5de1f600
 
 ## News and blogs
 
