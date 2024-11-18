@@ -18,6 +18,7 @@ https://github.com/user-attachments/assets/b6db9737-cd42-4848-8a44-f23a5de1f600
 
 ## News and blogs
 
+- [Nov 18th 2024] [Prem-1B-SQL](https://huggingface.co/premai-io/prem-1B-SQL) reached 10K + downloads in HuggingFace 
 - [Nov 7th 2024] Release of [Prem-1B-SQL Ollama](https://ollama.com/anindya/prem1b-sql-ollama-fp116) and Ollama support.
 - [Nov 5th 2024] Release of PremSQL agents, AgentServer and Playground
 - [Oct 30th] Prem-1B-SQL crossed 5K + downloads on Huggingface
