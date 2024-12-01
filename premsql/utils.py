@@ -53,7 +53,7 @@ def save_to_json(save_path: Union[str, Path], json_object: dict):
     try:
         save_path = Path(save_path) if isinstance(save_path, str) else save_path
         with open(save_path, "w") as json_file:
-            json.dump(json_object, json_file, indent=4)
+            json.dump(json_object, json_file, indent=4, ensure_ascii=False)
         logger.info(f"Saved JSON in: {save_path}")
     except Exception as e:
         logger.error(f"Unable to save JSON, Error: {e}")
