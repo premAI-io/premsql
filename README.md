@@ -1,4 +1,5 @@
 # PremSQL
+[![PyPI Downloads](https://static.pepy.tech/badge/premsql)](https://pepy.tech/projects/premsql)
 
 End-to-End Local-First Text-to-SQL Pipelines
 
