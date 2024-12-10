@@ -490,3 +490,17 @@ Stay tuned for these exciting updates! We encourage you to contribute and provid
 ## 📝 License
 
 PremSQL is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+
+## ☘️ Citation
+
+```
+@misc{Anindyadeep2024PremSQL,
+  author = {Anindyadeep},
+  title = {PremSQL: End-to-End Local-First Text-to-SQL Pipelines},
+  year = {2024},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/premAI-io/premsql}},
+  note = {Accessed: 2024-12-10}
+}
+```
