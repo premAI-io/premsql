@@ -1,8 +1,7 @@
-# PremSQL
+# PremSQL | Easy to use fully local RAG on Databases for developers
+
 [![PyPI Downloads](https://static.pepy.tech/badge/premsql)](https://pepy.tech/projects/premsql)
 <a href="https://huggingface.co/premai-io/prem-1B-SQL"><img src="https://img.shields.io/badge/HuggingFace (10K+) -yellow"></a>
-
-End-to-End Local-First Text-to-SQL Pipelines
 
 PremSQL is an open-source library designed to help developers create secure, fully local Text-to-SQL solutions using small language models. It provides all the essential tools to build and deploy end-to-end Text-to-SQL pipelines with customizable components, making it ideal for secure, autonomous AI-powered data analysis.
 
