@@ -1,4 +1,4 @@
-# PremSQL | Easy to use fully local RAG on Databases for developers
+# PremSQL | Easy to use fully local RAG on Databases
 
 [![PyPI Downloads](https://static.pepy.tech/badge/premsql)](https://pepy.tech/projects/premsql)
 <a href="https://huggingface.co/premai-io/prem-1B-SQL"><img src="https://img.shields.io/badge/HuggingFace (10K+) -yellow"></a>
